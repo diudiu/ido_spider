@@ -65,7 +65,10 @@ class Financial(scrapy.Item):
     maxPersonalCap = Field()
     bonusInfo = Field()
     bountyInfo = Field()
+    kycInfo = Field()
     preICOPrice = Field()
+    preSaleAmount= Field()
+    tokenIssuePolicy= Field()
     ICOPrice = Field()
     currentPrice = Field()
 
