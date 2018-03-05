@@ -165,8 +165,46 @@ class ICOSpider(BaseSpider):
                                     financial_item['bonusInfo'] = value
                                 elif 'KYC' in key:
                                     financial_item['kycInfo'] = value
+
+                        if 'short review' in title.lower():      # short review sections
+                            short_review = section.xpath(".//div[@class='col-12 info-analysis-list']")
+                            short_review.extract(0)
+                            pass
+
+                        if 'additional links' in title.lower():  # additional links section
+                            keys = section.xpath(".//div[@class='col-12']/li/a/text()").extract()
+                            links = section.xpath(".//div[@class='col-12']/li/a/@href").extract()
+                            keys = [key.strip() for key in keys]
+                            links = [link.strip() for link in links]
+                            for key, link in dict(zip(keys, links)).items():
+                                addit = Resource()
+                                addit['type'] = 'additional'
+                                addit['title'] = key
+                                addit['link'] = link
+                                item['resources'].append(addit)
+
+                        if 'screenshots' in title.lower():  # screenshots section
+                            ico_screenshots = section.xpath('//div[contains(@class, "col-6")]')
+                            for ico_screenshot in ico_screenshots:
+                                screenshots = Resource()
+                                img = ico_screenshot.xpath(".//img/@src")[0].extract()
+                                item['image_urls'].append(img)
+                                hex_dig = self.hex_hash(img)
+                                screenshots['link'] = hex_dig + '.' + img.split('.')[-1]
+
+                                key = ico_screenshot.xpath("./div[contains(@class, 'screenshot-title')]/text()").extract()[0]
+                                screenshots['title'] = key
+                                screenshots['type'] = 'screenshots'
+                                item['resources'].append(screenshots)
+
             print (item)
 
             self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
 
             yield item
+
+    def hex_hash(self, data):
+        hash_object = hashlib.sha1()
+        hash_object.update(data)
+        hex_dig = hash_object.hexdigest()
+        return hex_dig
