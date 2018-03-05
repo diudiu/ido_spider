@@ -16,6 +16,7 @@ class ICO(scrapy.Item):
     name = Field()  # name of project
     categories = Field()  # categories of this ico
     description = Field()  # basic description
+    message = Field()  # extra message related to the ico like alert
     country = Field()
     avatar = Field()
     team = Field()  # team info
@@ -60,6 +61,8 @@ class Financial(scrapy.Item):
     percentage_distributed_ico = Field()  # what is the percentage on sale for ico
     softCap = Field()
     hardCap = Field()
+    amountCollected = Field()
+    percentageCollected = Field()
     tokenNumber = Field()
     minPersonalCap = Field()
     maxPersonalCap = Field()
@@ -67,8 +70,8 @@ class Financial(scrapy.Item):
     bountyInfo = Field()
     kycInfo = Field()
     preICOPrice = Field()
-    preSaleAmount= Field()
-    tokenIssuePolicy= Field()
+    preSaleAmount = Field()
+    tokenIssuePolicy = Field()
     ICOPrice = Field()
     currentPrice = Field()
 
@@ -92,5 +95,5 @@ class Social(scrapy.Item):
 class Resource(scrapy.Item):
     link = Field()
     cover = Field()  # some resource like video might have a cover
-    type = Field()  # one of image, video,website, bounty,onepager,prototype,whitepaper,white list
+    type = Field()  # one of screenshot, video, website, bounty,onepager,prototype,whitepaper,white list
     title = Field()
