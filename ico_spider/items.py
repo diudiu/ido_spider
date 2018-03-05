@@ -67,8 +67,8 @@ class Financial(scrapy.Item):
     bountyInfo = Field()
     kycInfo = Field()
     preICOPrice = Field()
-    preSaleAmount= Field()
-    tokenIssuePolicy= Field()
+    preSaleAmount = Field()
+    tokenIssuePolicy = Field()
     ICOPrice = Field()
     currentPrice = Field()
 
@@ -92,5 +92,5 @@ class Social(scrapy.Item):
 class Resource(scrapy.Item):
     link = Field()
     cover = Field()  # some resource like video might have a cover
-    type = Field()  # one of image, video,website, bounty,onepager,prototype,whitepaper,white list
+    type = Field()  # one of screenshot, video, website, bounty,onepager,prototype,whitepaper,white list
     title = Field()

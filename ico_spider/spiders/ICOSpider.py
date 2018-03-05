@@ -151,12 +151,13 @@ class ICOSpider(BaseSpider):
                                     financial_item['percentage_distributed_ico'] = value
                                 elif 'Whitelist' in key:
                                     whiteList = Resource()
-                                    whiteList['type'] = 'whitelist'
-                                    whiteList['title'] = value
-                                    links = li.xpath('.//a[@class="list__link"]/@href')
-                                    if len(links):
-                                        whiteList['link'] = links[0].extract()
-                                    item['resources'].append(whiteList)
+                                    if "NO" not in value:
+                                        whiteList['type'] = 'whitelist'
+                                        whiteList['title'] = value
+                                        links = li.xpath('.//a[@class="list__link"]/@href')
+                                        if len(links):
+                                            whiteList['link'] = links[0].extract()
+                                        item['resources'].append(whiteList)
                                 elif 'pre-sale' in key.lower() and 'sold' in key.lower():
                                     financial_item['preSaleAmount'] = value
                                 elif 'token issue' in key.lower():
@@ -165,6 +166,9 @@ class ICOSpider(BaseSpider):
                                     financial_item['bonusInfo'] = value
                                 elif 'KYC' in key:
                                     financial_item['kycInfo'] = value
+                                elif 'max' in key.lower() and 'min' in key.lower() and 'cap' in key.lower():
+                                    financial_item['minPersonalCap'] = value.split('/')[1].strip()
+                                    financial_item['maxPersonalCap'] = value.split('/')[1].strip()
             print (item)
 
             self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
