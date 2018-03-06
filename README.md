@@ -21,3 +21,10 @@
     修改mongo的地址和端口
 #### 开启爬虫命令
 	`scrapy crawl ico`
+	
+	
+#### 配置七牛自动文件存储
+    修改qiniu.conf 为你自己的版本，配置要上传文件的地址
+    配置[qshell](https://github.com/qiniu/qshell)
+    `qshell qupload 15 qiniu.conf`  其中15为你想要的线程数
+	
