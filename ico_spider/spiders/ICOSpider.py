@@ -10,7 +10,7 @@ import re
 from scrapy.selector import Selector
 from scrapy import Request
 
-from ico_spider.items import ICO, Financial, Resource
+from ico_spider.items import ICO, Financial, Resource, Rating, ShortReview
 from ico_spider.spiders.BaseSpider import BaseSpider
 from scrapy.conf import settings
 
@@ -170,42 +170,89 @@ class ICOSpider(BaseSpider):
                                     financial_item['minPersonalCap'] = value.split('/')[1].strip()
                                     financial_item['maxPersonalCap'] = value.split('/')[1].strip()
 
+                        if 'our rating' in title.lower():        # our rating section
+                            self._parse_rating(sel, item)
+
                         if 'short review' in title.lower():      # short review sections
-                            short_review = section.xpath(".//div[@class='col-12 info-analysis-list']")
-                            short_review.extract(0)
-                            pass
+                            self._parse_short_review(sel, item)
 
                         if 'additional links' in title.lower():  # additional links section
-                            keys = section.xpath(".//div[@class='col-12']/li/a/text()").extract()
-                            links = section.xpath(".//div[@class='col-12']/li/a/@href").extract()
-                            keys = [key.strip() for key in keys]
-                            links = [link.strip() for link in links]
-                            for key, link in dict(zip(keys, links)).items():
-                                addit = Resource()
-                                addit['type'] = 'additional'
-                                addit['title'] = key
-                                addit['link'] = link
-                                item['resources'].append(addit)
+                            self._parse_additional_links(sel, item)
 
                         if 'screenshots' in title.lower():  # screenshots section
-                            ico_screenshots = section.xpath('//div[contains(@class, "col-6")]')
-                            for ico_screenshot in ico_screenshots:
-                                screenshots = Resource()
-                                img = ico_screenshot.xpath(".//img/@src")[0].extract()
-                                item['image_urls'].append(img)
-                                hex_dig = self.hex_hash(img)
-                                screenshots['link'] = hex_dig + '.' + img.split('.')[-1]
-
-                                key = ico_screenshot.xpath("./div[contains(@class, 'screenshot-title')]/text()").extract()[0]
-                                screenshots['title'] = key
-                                screenshots['type'] = 'screenshots'
-                                item['resources'].append(screenshots)
+                            self._parse_screenshots(sel, item)
 
             print (item)
 
             self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
 
             yield item
+
+    def _parse_rating(self, response, item):
+        rating = Rating()
+        rating_field = response.xpath(".//div[contains(@class, 'rating-field')]")
+        rating_items = rating_field.xpath(".//div[contains(@class, 'rating-box')]")
+        for rating_item in rating_items:
+            key = rating_item.xpath(".//p/text()")[0].extract().strip()
+            value = rating_item.xpath(".//p/text()")[-1].extract().strip()
+            if 'hype rate' in key.lower():
+                rating['hypoLevel'] = value
+            elif 'risk rate' in key.lower():
+                rating['riskLevel'] = value
+            elif 'roi rate' in key.lower():
+                rating['ROIScore'] = value
+            elif 'ICO Dr' in key:
+                rating['totalScore'] = value
+        item['rating'] = rating
+
+    def _parse_short_review(self, response, item):
+        sr = ShortReview()
+        short_reviews = response.xpath(".//div[@class='col-12 info-analysis-list']/li")
+        for short_review in short_reviews:
+            key = short_review.xpath("./span/text()")[0].extract().strip()[:-1]
+            value = short_review.xpath("./text()")[0].extract().strip()
+            if 'exchanges' in key.lower():
+                sr['exchagnes'] = value
+            elif 'number of team members' in key.lower():
+                sr['teamNum'] = value
+            elif 'team from' in key.lower():
+                sr['teamFrom'] = value
+            elif 'prototype' in key.lower():
+                sr['prototype'] = value
+            elif 'unsold Tokens' in key.lower():
+                sr['unsoldTokens'] = value
+            elif 'registered company' in key.lower():
+                sr['company'] = value
+            elif 'ico active from' in key.lower():
+                sr['activeFrom'] = value
+
+        item['shortreview'] = sr
+
+    def _parse_additional_links(self, response, item):
+        keys = response.xpath(".//div[@class='col-12']/li/a/text()").extract()
+        links = response.xpath(".//div[@class='col-12']/li/a/@href").extract()
+        keys = [key.strip() for key in keys]
+        links = [link.strip() for link in links]
+        for key, link in dict(zip(keys, links)).items():
+            addit = Resource()
+            addit['type'] = 'additional'
+            addit['title'] = key
+            addit['link'] = link
+            item['resources'].append(addit)
+
+    def _parse_screenshots(self, response, item):
+        ico_screenshots = response.xpath('//div[contains(@class, "col-6")]')
+        for ico_screenshot in ico_screenshots:
+            screenshots = Resource()
+            img = ico_screenshot.xpath(".//img/@src")[0].extract()
+            item['image_urls'].append(img)
+            hex_dig = self.hex_hash(img)
+            screenshots['link'] = hex_dig + '.' + img.split('.')[-1]
+
+            key = ico_screenshot.xpath("./div[contains(@class, 'screenshot-title')]/text()").extract()[0]
+            screenshots['title'] = key
+            screenshots['type'] = 'screenshots'
+            item['resources'].append(screenshots)
 
     def hex_hash(self, data):
         hash_object = hashlib.sha1()
