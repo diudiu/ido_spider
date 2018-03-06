@@ -195,6 +195,7 @@ class ICOSpider(BaseSpider):
             key = li.xpath('./span/text()')[0].extract()
             value = li.xpath('text()')[0].extract()
             value = unicodedata.normalize("NFKD", value)
+            key = unicodedata.normalize("NFKD", key)
             print (key)
             print (value)
             if 'Ticker' in key:
@@ -224,6 +225,8 @@ class ICOSpider(BaseSpider):
                 financial_item['tokenIssuePolicy'] = value
             elif 'bonus' in key.lower():
                 financial_item['bonusInfo'] = value
+            elif "participate" in key.lower():
+                financial_item['can_not_participate'] = map(unicode.strip, value.split(','))
             elif 'KYC' in key:
                 financial_item['kycInfo'] = value
             elif 'max' in key.lower() and 'min' in key.lower() and 'cap' in key.lower():

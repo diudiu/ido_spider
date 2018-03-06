@@ -59,7 +59,7 @@ class Financial(scrapy.Item):
     token = Field()
     platform = Field()
     type = Field()
-    coins_accepted = Field() # 接受的币种
+    coins_accepted = Field()  # 接受的币种
     percentage_distributed_ico = Field()  # what is the percentage on sale for ico
     softCap = Field()
     hardCap = Field()
@@ -71,6 +71,7 @@ class Financial(scrapy.Item):
     bonusInfo = Field()
     bountyInfo = Field()
     kycInfo = Field()
+    can_not_participate = Field()  # an array of region or country can not participate  example: [u'USA', u'Singapore', u'China']
     preICOPrice = Field()
     preSaleAmount = Field()
     tokenIssuePolicy = Field()
