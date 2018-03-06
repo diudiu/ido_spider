@@ -59,7 +59,7 @@ class Financial(scrapy.Item):
     token = Field()
     platform = Field()
     type = Field()
-    coins_accepted = Field()
+    coins_accepted = Field() # 接受的币种
     percentage_distributed_ico = Field()  # what is the percentage on sale for ico
     softCap = Field()
     hardCap = Field()

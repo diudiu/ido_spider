@@ -9,8 +9,8 @@ import hashlib
 import re
 from scrapy.selector import Selector
 from scrapy import Request
-
 from ico_spider.items import ICO, Financial, Resource, Rating, ShortReview
+import util
 from ico_spider.spiders.BaseSpider import BaseSpider
 from scrapy.conf import settings
 
@@ -43,10 +43,15 @@ class ICOSpider(BaseSpider):
                     item['resources'] = []
                     item['social_links'] = []
                     item['image_urls'] = []
+                    financial_item = Financial()
+                    item['financial'] = financial_item
                     name = icoItem.xpath('.//div[@class="ico-main-info"]').xpath('.//a[@rel="bookmark"]/text()')[
                         0].extract()
                     item['name'] = name.strip()
                     category = icoItem.xpath('.//div[@class="categ_type"]/text()')[0].extract().strip()
+                    percentageFinished = icoItem.xpath('.//span[@class="prec"]/text()')
+                    if len(percentageFinished):
+                        financial_item['percentageCollected'] = percentageFinished[0].extract().strip()
                     item['categories'] = []
                     item['categories'].append(category)
                     item['source'] = 'icodrops'
@@ -63,9 +68,7 @@ class ICOSpider(BaseSpider):
                     mydatetime = datetime.datetime.now()
                     if item['status'] == 'active':
                         date = icoItem.xpath('.//div[@class="date"]/@data-date')[0].extract()
-                        endDate = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
-                        endDate_utc = timezone.localize(endDate).astimezone(pytz.UTC)
-                        item['endTime'] = endDate_utc.strftime("%Y-%m-%dT%H:%M:%S")
+                        item['endTime'] = util.parseDateStringToUTC(date, "%Y-%m-%d %H:%M:%S")
                     elif item['status'] == 'upcoming':
                         date = icoItem.xpath('.//div[@class="date"]/text()')[0].extract().strip()
                         if date and "TBA" not in date:
@@ -78,9 +81,10 @@ class ICOSpider(BaseSpider):
                                 elif date.endswith('m') or date.endswith('min'):
                                     startDate = mydatetime + datetime.timedelta(minutes=int(diff))
                             else:
-                                if 'TBA' in date:
-                                    dateObj = datetime.datetime.strptime(date + ' ' + str(mydatetime.year), '%d %b %Y')
-                                    if dateObj < mydatetime:
+                                if 'TBA' not in date:
+                                    dateObj = util.parseDateStringToDateObj(date + ' ' + str(mydatetime.year),
+                                                                            '%d %b %Y')
+                                    if dateObj and dateObj < mydatetime:
                                         next_year = str(mydatetime.year + 1)
                                         dateObj = datetime.datetime.strptime(date + ' ' + next_year, '%d %b %Y')
                                     startDate = dateObj
@@ -95,13 +99,11 @@ class ICOSpider(BaseSpider):
                             -1].strip()
                         if date and "TBA" not in date:
                             # date is like '14 March'
-                            dateObj = datetime.datetime.strptime(date + ' ' + str(mydatetime.year), '%d %b %Y')
-                            if dateObj > mydatetime:
+                            utc_date = util.parseDateStringToUTC(date + ' ' + str(mydatetime.year), '%d %b %Y')
+                            if utc_date and util.UTCDateStringToDateObj(utc_date) > mydatetime:
                                 last_year = str(mydatetime.year - 1)
-                                dateObj = datetime.datetime.strptime(date + ' ' + last_year, '%d %b %Y')
-
-                            endDate_utc = timezone.localize(dateObj).astimezone(pytz.UTC)
-                            item['endTime'] = endDate_utc.strftime("%Y-%m-%dT%H:%M:%S")
+                                utc_date = util.parseDateStringToUTC(date + ' ' + last_year, '%d %b %Y')
+                            item['endTime'] = utc_date
                     yield Request(path, callback=self.parse_ico_drops_items, meta={'item': item})
 
         self.log('A response from %s just arrived!' % response.url)
@@ -109,7 +111,11 @@ class ICOSpider(BaseSpider):
     def parse_ico_drops_items(self, response):
         self.log('A response from %s just arrived!' % response.url)
         item = response.meta.get('item')
+        financial_item = item['financial']
         sel = Selector(response)
+        important_note = sel.xpath('normalize-space(.//div[@class="important-note"]/text())')
+        if len(important_note):
+            item['message'] = important_note[0].extract()
         ico_details = sel.xpath('.//div[contains(@class, "ico-desk")]')
         if len(ico_details):
             for index, section in enumerate(ico_details):
@@ -123,13 +129,40 @@ class ICOSpider(BaseSpider):
                         hex_dig = hash_object.hexdigest()
                         item['avatar'] = hex_dig + '.' + img.split('.')[-1]
                     mainInfo = section.xpath('.//div[@class="ico-icon"]')[0]
+                    description = \
+                        section.xpath('normalize-space(.//div[@class="ico-description"]/text())')[0].extract()[
+                            0].strip()
+                    item['description'] = description
+                    if item['status'] is not 'upcoming':
+                        currentAmountCollected = \
+                            section.xpath('.//div[contains(@class,"money-goal")]/text()').extract()[0].strip()
+                        financial_item['amountCollected'] = currentAmountCollected
                 else:
                     titleDiv = section.xpath('.//div[contains(@class, "title-h4")]/h4/text()')
                     if len(titleDiv):
                         title = titleDiv[0].extract()
                         if 'token' in title.lower() and 'sale' in title.lower():  # financial section
-                            financial_item = Financial()
-                            item['financial'] = financial_item
+                            start_end_date = section.xpath(
+                                'normalize-space(.//i[contains(@class,"fa-calendar")]/following-sibling::*[1])')[
+                                0].extract()
+                            if "PERIOD ISN'T SET" in start_end_date:
+                                item['startTime'] = None
+                                item['endTime'] = None
+                            else:
+                                start_end_date = start_end_date.split(u"\u2013")
+                                if len(start_end_date) > 1:
+                                    year = datetime.datetime.now().year
+                                    startDate = util.parseDateStringToUTC(
+                                        start_end_date[0].split(':')[-1].strip() + ' ' + str(year), '%d %b %Y')
+                                    endDate = util.parseDateStringToUTC(start_end_date[1].strip() + ' ' + str(year),
+                                                                        '%d %b %Y')
+                                    print ('start-end ' + startDate + " - " + endDate)
+
+                                    if not item.get('startTime', None):
+                                        item['startTime'] = startDate
+                                    if not item.get('endTime', None):
+                                        item['endTime'] = endDate
+
                             li_element = section.xpath('.//li')
                             for li in li_element:
                                 key = li.xpath('./span/text()')[0].extract()
