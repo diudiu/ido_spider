@@ -31,6 +31,8 @@ class ICO(scrapy.Item):
     endTime = Field()
     image_urls = Field()  # for scrapy image pipeline, do not change name
     images = Field()  # for scrapy image pipeline, do not change name
+    file_urls = Field()  # for scrapy file pipeline, do not change name
+    files = Field()  # for scrapy file pipeline, do not change name
     create_at = Field()
     update_at = Field()
     sync_done = Field()  # whether this record is put into our prod database

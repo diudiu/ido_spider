@@ -59,6 +59,7 @@ target/
 .idea/
 images/
 *.iml
+files/
 
 #local config file
 config.py

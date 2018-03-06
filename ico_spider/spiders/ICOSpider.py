@@ -26,8 +26,8 @@ class ICOSpider(BaseSpider):
         self.crawlerDb = self.local_client[db_name]
         if mode == '0':  # crawl icodrops.com
             self.start_urls.append("https://icodrops.com/category/active-ico/")
-            self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
-            self.start_urls.append("https://icodrops.com/category/ended-ico/")
+            # self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
+            # self.start_urls.append("https://icodrops.com/category/ended-ico/")
 
     def parse(self, response):
 
@@ -43,6 +43,7 @@ class ICOSpider(BaseSpider):
                     item['resources'] = []
                     item['social_links'] = []
                     item['image_urls'] = []
+                    item['file_urls'] = []
                     financial_item = Financial()
                     item['financial'] = financial_item
                     name = icoItem.xpath('.//div[@class="ico-main-info"]').xpath('.//a[@rel="bookmark"]/text()')[
@@ -137,6 +138,22 @@ class ICOSpider(BaseSpider):
                         currentAmountCollected = \
                             section.xpath('.//div[contains(@class,"money-goal")]/text()').extract()[0].strip()
                         financial_item['amountCollected'] = currentAmountCollected
+
+                    # 解析 websit and whitepaper
+                    button_keys = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/div/text()")
+                    button_values = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/@href")
+                    button_keys = [button_key.extract().strip().lower() for button_key in button_keys]
+                    button_values = [button_val.extract().strip().lower() for button_val in button_values]
+                    for key, value in dict(zip(button_keys, button_values)).items():
+                        btn = Resource()
+                        if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
+                            item['file_urls'].append(value)
+                            value = self.hex_hash(value) + '.' + value.split('.')[-1].lower()
+                        btn['type'] = key
+                        btn['title'] = key
+                        btn['link'] = value
+                        item['resources'].append(btn)
+
                 else:
                     titleDiv = section.xpath('.//div[contains(@class, "title-h4")]/h4/text()')
                     if len(titleDiv):
