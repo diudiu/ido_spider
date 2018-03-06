@@ -16,5 +16,8 @@
 #### 安装scrapy
 	[链接](https://doc.scrapy.org/en/latest/intro/tutorial.html "链接")
 
+#### 配置爬虫数据库
+    cp config.py.sample config.py
+    修改mongo的地址和端口
 #### 开启爬虫命令
 	`scrapy crawl ico`
