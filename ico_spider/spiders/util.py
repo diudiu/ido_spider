@@ -1,6 +1,13 @@
 import datetime
 import pytz
+import hashlib
 
+
+def hex_hash(data):
+    hash_object = hashlib.sha1()
+    hash_object.update(data)
+    hex_dig = hash_object.hexdigest()
+    return hex_dig
 
 # convert date string in format like 3 March 2017, '%d %b %Y' from pacific time to UTC
 # example (parseDateStringToUTC('3 Mar 2014','%d %b %Y'))
