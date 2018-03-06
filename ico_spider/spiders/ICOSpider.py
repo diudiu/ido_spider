@@ -4,6 +4,7 @@ import urlparse
 import datetime
 import pytz
 import unicodedata
+import hashlib
 from scrapy.spider import Spider
 import re
 from scrapy.selector import Selector
@@ -25,8 +26,8 @@ class ICOSpider(BaseSpider):
         self.crawlerDb = self.local_client[db_name]
         if mode == '0':  # crawl icodrops.com
             self.start_urls.append("https://icodrops.com/category/active-ico/")
-            # self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
-            # self.start_urls.append("https://icodrops.com/category/ended-ico/")
+            self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
+            self.start_urls.append("https://icodrops.com/category/ended-ico/")
 
     def parse(self, response):
 
