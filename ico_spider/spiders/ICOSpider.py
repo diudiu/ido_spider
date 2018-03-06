@@ -5,7 +5,6 @@ import datetime
 import pytz
 import unicodedata
 from scrapy.spider import Spider
-import hashlib
 import re
 from scrapy.selector import Selector
 from scrapy import Request
@@ -85,9 +84,7 @@ class ICOSpider(BaseSpider):
                     if len(icon):
                         img = icon[0].xpath('.//img/@data-src')[0].extract()
                         item['image_urls'].append(img)
-                        hash_object = hashlib.sha1()
-                        hash_object.update(img)
-                        hex_dig = hash_object.hexdigest()
+                        hex_dig = util.hex_hash(img)
                         item['avatar'] = hex_dig + '.' + img.split('.')[-1]
                     description = \
                         section.xpath('normalize-space(.//div[@class="ico-description"]/text())')[0].extract()[
@@ -180,7 +177,7 @@ class ICOSpider(BaseSpider):
             screenshots = Resource()
             img = ico_screenshot.xpath(".//img/@src")[0].extract()
             item['image_urls'].append(img)
-            hex_dig = self.hex_hash(img)
+            hex_dig = util.hex_hash(img)
             screenshots['link'] = hex_dig + '.' + img.split('.')[-1]
 
             key = ico_screenshot.xpath("./div[contains(@class, 'screenshot-title')]/text()").extract()[0]
