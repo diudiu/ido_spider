@@ -162,51 +162,12 @@ class ICOSpider(BaseSpider):
                                         item['startTime'] = startDate
                                     if not item.get('endTime', None):
                                         item['endTime'] = endDate
+                            self._parse_financial(section, item)
 
-                            li_element = section.xpath('.//li')
-                            for li in li_element:
-                                key = li.xpath('./span/text()')[0].extract()
-                                value = li.xpath('text()')[0].extract()
-                                value = unicodedata.normalize("NFKD", value)
-                                print (key)
-                                print (value)
-                                if 'Ticker' in key:
-                                    item['ticker'] = value
-                                elif 'Token type' in key:
-                                    financial_item['type'] = value
-                                elif 'ICO Token Price' in key:
-                                    financial_item['ICOPrice'] = value
-                                elif 'Fundraising Goal' in key:
-                                    financial_item['hardCap'] = value
-                                elif 'Total Tokens' in key:
-                                    financial_item['tokenNumber'] = value
-                                elif 'Available' in key:
-                                    financial_item['percentage_distributed_ico'] = value
-                                elif 'Whitelist' in key:
-                                    whiteList = Resource()
-                                    if "NO" not in value:
-                                        whiteList['type'] = 'whitelist'
-                                        whiteList['title'] = value
-                                        links = li.xpath('.//a[@class="list__link"]/@href')
-                                        if len(links):
-                                            whiteList['link'] = links[0].extract()
-                                        item['resources'].append(whiteList)
-                                elif 'pre-sale' in key.lower() and 'sold' in key.lower():
-                                    financial_item['preSaleAmount'] = value
-                                elif 'token issue' in key.lower():
-                                    financial_item['tokenIssuePolicy'] = value
-                                elif 'bonus' in key.lower():
-                                    financial_item['bonusInfo'] = value
-                                elif 'KYC' in key:
-                                    financial_item['kycInfo'] = value
-                                elif 'max' in key.lower() and 'min' in key.lower() and 'cap' in key.lower():
-                                    financial_item['minPersonalCap'] = value.split('/')[1].strip()
-                                    financial_item['maxPersonalCap'] = value.split('/')[1].strip()
-
-                        if 'our rating' in title.lower():        # our rating section
+                        if 'our rating' in title.lower():  # our rating section
                             self._parse_rating(sel, item)
 
-                        if 'short review' in title.lower():      # short review sections
+                        if 'short review' in title.lower():  # short review sections
                             self._parse_short_review(sel, item)
 
                         if 'additional links' in title.lower():  # additional links section
@@ -214,8 +175,6 @@ class ICOSpider(BaseSpider):
 
                         if 'screenshots' in title.lower():  # screenshots section
                             self._parse_screenshots(sel, item)
-
-            print (item)
 
             self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
 
@@ -292,3 +251,45 @@ class ICOSpider(BaseSpider):
         hash_object.update(data)
         hex_dig = hash_object.hexdigest()
         return hex_dig
+
+    def _parse_financial(self, section, item):
+        li_element = section.xpath('.//li')
+        financial_item = item['financial']
+        for li in li_element:
+            key = li.xpath('./span/text()')[0].extract()
+            value = li.xpath('text()')[0].extract()
+            value = unicodedata.normalize("NFKD", value)
+            print (key)
+            print (value)
+            if 'Ticker' in key:
+                item['ticker'] = value
+            elif 'Token type' in key:
+                financial_item['type'] = value
+            elif 'ICO Token Price' in key:
+                financial_item['ICOPrice'] = value
+            elif 'Fundraising Goal' in key:
+                financial_item['hardCap'] = value
+            elif 'Total Tokens' in key:
+                financial_item['tokenNumber'] = value
+            elif 'Available' in key:
+                financial_item['percentage_distributed_ico'] = value
+            elif 'Whitelist' in key:
+                whiteList = Resource()
+                if "NO" not in value:
+                    whiteList['type'] = 'whitelist'
+                    whiteList['title'] = value
+                    links = li.xpath('.//a[@class="list__link"]/@href')
+                    if len(links):
+                        whiteList['link'] = links[0].extract()
+                    item['resources'].append(whiteList)
+            elif 'pre-sale' in key.lower() and 'sold' in key.lower():
+                financial_item['preSaleAmount'] = value
+            elif 'token issue' in key.lower():
+                financial_item['tokenIssuePolicy'] = value
+            elif 'bonus' in key.lower():
+                financial_item['bonusInfo'] = value
+            elif 'KYC' in key:
+                financial_item['kycInfo'] = value
+            elif 'max' in key.lower() and 'min' in key.lower() and 'cap' in key.lower():
+                financial_item['minPersonalCap'] = value.split('/')[1].strip()
+                financial_item['maxPersonalCap'] = value.split('/')[1].strip()
