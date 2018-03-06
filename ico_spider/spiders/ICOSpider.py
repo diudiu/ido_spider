@@ -8,7 +8,7 @@ from scrapy.spider import Spider
 import re
 from scrapy.selector import Selector
 from scrapy import Request
-from ico_spider.items import ICO, Financial, Resource, Rating, ShortReview
+from ico_spider.items import ICO, Financial, Resource, Rating, ShortReview, Social
 import util
 from ico_spider.spiders.BaseSpider import BaseSpider
 from scrapy.conf import settings
@@ -110,6 +110,8 @@ class ICOSpider(BaseSpider):
                         btn['title'] = key
                         btn['link'] = value
                         item['resources'].append(btn)
+
+                    self._parse_social_links(section, item)
 
                 else:
                     titleDiv = section.xpath('.//div[contains(@class, "title-h4")]/h4/text()')
@@ -317,3 +319,33 @@ class ICOSpider(BaseSpider):
                     last_year = str(mydatetime.year - 1)
                     utc_date = util.parseDateStringToUTC(date + ' ' + last_year, '%d %b %Y')
                 item['endTime'] = utc_date
+
+    def _parse_social_links(self, section, item):
+        soc_links = section.xpath('.//div[@class="soc_links"]/a/@href').extract()
+        for link in soc_links:
+            social_network = Social()
+            if 'facebook' in link or 'fb.me' in link:
+                social_network['network'] = 'facebook'
+            elif 'github.com' in link:
+                social_network['network'] = 'github'
+            elif 'twitter' in link or '//t.co' in link:
+                social_network['network'] = 'twitter'
+            elif 't.me' in link or 'telegram' in link:
+                social_network['network'] = 'telegram'
+            elif 'bitcointalk.org' in link:
+                social_network['network'] = 'bitcointalk'
+            elif 'youtube' in link:
+                social_network['network'] = 'youtube'
+            elif 'slack.' in link:
+                social_network['network'] = 'slack'
+            elif 'medium.com' in link:
+                social_network['network'] = 'medium'
+            elif 'reddit.com' in link:
+                social_network['network'] = 'reddit'
+            else:
+                print ('not wellknown ' + link)
+
+            # Only add this network if it is wellknown
+            if 'network' in social_network:
+                social_network['link'] = link
+                item['social_links'].append(social_network)
