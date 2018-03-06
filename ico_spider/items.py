@@ -112,3 +112,6 @@ class ShortReview(scrapy.Item):
     unsoldTokens = Field()  # Unsold Tokens
     company = Field()  # Registered Company
     activeFrom = Field()  # ICO Active from
+    socialActivity = Field()  # Social Activity Level
+    roleOfToken = Field()  # Role of Token
+    other = Field()

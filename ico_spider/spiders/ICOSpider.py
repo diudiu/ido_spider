@@ -4,7 +4,6 @@ import urlparse
 import datetime
 import pytz
 import unicodedata
-import hashlib
 from scrapy.spider import Spider
 import re
 from scrapy.selector import Selector
@@ -106,7 +105,7 @@ class ICOSpider(BaseSpider):
                         btn = Resource()
                         if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
                             item['file_urls'].append(value)
-                            value = self.hex_hash(value) + '.' + value.split('.')[-1].lower()
+                            value = util.hex_hash(value) + '.' + value.split('.')[-1].lower()
                         btn['type'] = key
                         btn['title'] = key
                         btn['link'] = value
@@ -156,6 +155,7 @@ class ICOSpider(BaseSpider):
 
     def _parse_short_review(self, response, item):
         sr = ShortReview()
+        sr['other'] = []
         short_reviews = response.xpath(".//div[@class='col-12 info-analysis-list']/li")
         for short_review in short_reviews:
             key = short_review.xpath("./span/text()")[0].extract().strip()[:-1]
@@ -174,6 +174,12 @@ class ICOSpider(BaseSpider):
                 sr['company'] = value
             elif 'ico active from' in key.lower():
                 sr['activeFrom'] = value
+            elif 'social activity level' in key.lower():
+                sr['socialActivity'] = value
+            elif 'role of token' in key.lower():
+                sr['roleOfToken'] = value
+            else:
+                sr['other'].append(key)     # 其他未定义字段暂时放到other里，以便以后定位
 
         item['shortreview'] = sr
 
@@ -190,24 +196,21 @@ class ICOSpider(BaseSpider):
             item['resources'].append(addit)
 
     def _parse_screenshots(self, response, item):
-        ico_screenshots = response.xpath('//div[contains(@class, "col-6")]')
+        ico_screenshots = response.xpath('//div[contains(@class, "col-6 col-md-3")]')
         for ico_screenshot in ico_screenshots:
             screenshots = Resource()
             img = ico_screenshot.xpath(".//img/@src")[0].extract()
             item['image_urls'].append(img)
             hex_dig = util.hex_hash(img)
             screenshots['link'] = hex_dig + '.' + img.split('.')[-1]
+            try:
+                key = ico_screenshot.xpath(".//div[contains(@class, 'screenshot-title')]/text()").extract()[0]
+            except IndexError:
+                key = None
 
-            key = ico_screenshot.xpath("./div[contains(@class, 'screenshot-title')]/text()").extract()[0]
             screenshots['title'] = key
             screenshots['type'] = 'screenshots'
             item['resources'].append(screenshots)
-
-    def hex_hash(self, data):
-        hash_object = hashlib.sha1()
-        hash_object.update(data)
-        hex_dig = hash_object.hexdigest()
-        return hex_dig
 
     def _parse_financial(self, section, item):
         li_element = section.xpath('.//li')
