@@ -23,6 +23,8 @@ class ICO(scrapy.Item):
     financial = Field()
     mileStones = Field()  # list of mile stones
     resources = Field()  # list of resources
+    rating = Field()
+    shortreview = Field()
     social_links = Field()
     status = Field()
     startTime = Field()
@@ -84,6 +86,7 @@ class Rating(scrapy.Item):
     riskLevel = Field()
     hypoLevel = Field()
     ROIScore = Field()
+    totalScore = Field()
     comment = Field()
 
 
@@ -97,3 +100,13 @@ class Resource(scrapy.Item):
     cover = Field()  # some resource like video might have a cover
     type = Field()  # one of screenshot, video, website, bounty,onepager,prototype,whitepaper,white list
     title = Field()
+
+
+class ShortReview(scrapy.Item):
+    exchagnes = Field()  # Exchanges
+    teamNum = Field()  # Number of Team Members
+    teamFrom = Field()  # Team from
+    prototype = Field()  # Prototype
+    unsoldTokens = Field()  # Unsold Tokens
+    company = Field()  # Registered Company
+    activeFrom = Field()  # ICO Active from

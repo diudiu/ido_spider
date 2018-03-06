@@ -13,7 +13,7 @@ MONGODB_COLLECTION = 'icos'
 ITEM_PIPELINES = {'scrapy.contrib.pipeline.images.ImagesPipeline': 1,
                   # 'mma.pipelines.MongoDBPipeline': 2
                   }
-MONGODB_SERVER = "127.0.0.1"
+MONGODB_SERVER = "192.168.1.196"
 MONGODB_PORT = 27017
 MONGODB_DB = "ICO"
 # use fighters if crawl only the details
