@@ -30,7 +30,7 @@ class ICOSpider(BaseSpider):
             # self.start_urls.append("https://icodrops.com/category/ended-ico/")
 
     def start_requests(self):
-
+        self.get_cookies()
         for i, url in enumerate(self.start_urls):
             yield self.request(url, self.parse, None)
 
