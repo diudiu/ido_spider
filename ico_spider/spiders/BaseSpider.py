@@ -16,7 +16,7 @@ class BaseSpider(Spider):
     # local_client = MongoClient('127.0.0.1', 27017)
     local_client = MongoClient(config.MONGODB_SERVER, config.MONGODB_PORT)
     local_cookie = None
-
+    local_user_agent = None
     # 目前我们只存本地，如果有需要可以存prod
 
 
@@ -25,7 +25,7 @@ class BaseSpider(Spider):
          wrapper for scrapy.request
         """
         # cookieStr = "_ym_uid=1519365989608655240; __cfduid=d53f4e6df1e80b707f7d24de35c95c0b71519536411; cp_id_32cab=true; _ym_isad=1; time=3/6/2018, 9:26:30 PM; cf_clearance=599d4a4ad8f8c278dc92cf9ed4947b66aeed0475-1520400927-1800"
-        useragent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36"
+        #useragent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36"
         # headers = Headers({'user-agent': useragent})
         # cookie = SimpleCookie()
         # cookie.load(cookieStr)
@@ -36,7 +36,7 @@ class BaseSpider(Spider):
         #     cookies[key] = morsel.value
 
         request = scrapy.Request(url=url,
-                                 headers={'user-agent': useragent},
+                                 headers={'user-agent': self.local_user_agent},
                                  cookies=self.local_cookie,
                                  callback=callback,
                                  meta={'item': item})
@@ -55,5 +55,6 @@ class BaseSpider(Spider):
         wait.until(EC.title_contains('ICO Drops'))
         cookies = driver.get_cookies()
         self.local_cookie = cookies
+        self.local_user_agent = driver.execute_script("return navigator.userAgent")
         driver.close()
         return cookies
