@@ -5,7 +5,7 @@ import hashlib
 
 def hex_hash(data):
     hash_object = hashlib.sha1()
-    hash_object.update(data)
+    hash_object.update(data.encode('utf-8'))
     hex_dig = hash_object.hexdigest()
     return hex_dig
 
