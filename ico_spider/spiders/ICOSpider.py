@@ -10,6 +10,7 @@ from scrapy.selector import Selector
 from scrapy import Request
 from ico_spider.items import ICO, Financial, Resource, Rating, ShortReview, Social
 import util
+import cfscrape
 from ico_spider.spiders.BaseSpider import BaseSpider
 from scrapy.conf import settings
 
@@ -25,8 +26,13 @@ class ICOSpider(BaseSpider):
         self.crawlerDb = self.local_client[db_name]
         if mode == '0':  # crawl icodrops.com
             self.start_urls.append("https://icodrops.com/category/active-ico/")
-            self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
-            self.start_urls.append("https://icodrops.com/category/ended-ico/")
+            # self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
+            # self.start_urls.append("https://icodrops.com/category/ended-ico/")
+
+    def start_requests(self):
+        self.get_cookies()
+        for i, url in enumerate(self.start_urls):
+            yield self.request(url, self.parse, None)
 
     def parse(self, response):
 
@@ -65,7 +71,8 @@ class ICOSpider(BaseSpider):
                     # we need to recheck this logic
                     # 在这里爬开始结束时间的原因是这里的时间稍微准确点（倒计时或者含有小时级别时间的数据）,如果这里爬不到才去details page
                     self._parse_ico_list_page_start_end_time(icoItem, item)
-                    yield Request(path, callback=self.parse_ico_drops_items, meta={'item': item})
+                    # yield self.request(url, self.parse)
+                    yield self.request(path, self.parse_ico_drops_items, item)
 
         self.log('A response from %s just arrived!' % response.url)
 
