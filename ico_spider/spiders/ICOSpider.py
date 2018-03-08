@@ -8,22 +8,23 @@ from scrapy.spider import Spider
 import re
 from scrapy.selector import Selector
 from scrapy import Request
-from ico_spider.items import ICO, Financial, Resource, Rating, ShortReview, Social
+from ..items import ICO, Financial, Resource, Rating, ShortReview, Social
 import util
 import cfscrape
-from ico_spider.spiders.BaseSpider import BaseSpider
+from ..spiders.BaseSpider import BaseSpider
 from scrapy.conf import settings
+from mongo_handler import MongoBase
 
 
 class ICOSpider(BaseSpider):
     name = "ico"
-    allowed_domains = ["icodrops.com", "icobench.com"]
+    allowed_domains = ["icodrops.com", "icobench.com", "192.168.1.27"]
 
     start_urls = []
 
     def __init__(self, db_name=settings['MONGODB_DB'], mode='0', *args, **kwargs):
         super(ICOSpider, self).__init__(*args, **kwargs)
-        self.crawlerDb = self.local_client[db_name]
+        # self.crawlerDb = self.local_client[db_name]
         if mode == '0':  # crawl icodrops.com
             self.start_urls.append("https://icodrops.com/category/active-ico/")
             # self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
@@ -141,7 +142,11 @@ class ICOSpider(BaseSpider):
                         if 'screenshots' in title.lower():  # screenshots section
                             self._parse_screenshots(sel, item)
 
-            self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
+            collection = MongoBase("ICOS")
+            result = collection.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
+            # result = self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
+            if result:
+                util.push_to_server(item)
 
             yield item
 
@@ -172,7 +177,7 @@ class ICOSpider(BaseSpider):
             if 'exchanges' in key.lower():
                 sr['exchagnes'] = value
             elif 'number of team members' in key.lower():
-                sr['teamNum'] = value
+                sr['teamNumber'] = value
             elif 'team from' in key.lower():
                 sr['teamFrom'] = value
             elif 'prototype' in key.lower():
