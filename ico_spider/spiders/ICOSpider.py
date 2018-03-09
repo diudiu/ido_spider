@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import urlparse
 import datetime
-import pytz
-import unicodedata
-from scrapy.spider import Spider
 import re
+import unicodedata
+
+import pytz
+from bilei_crawler.ico_spider.utils import util
+from bilei_crawler.ico_spider.utils.mongo_handler import MongoBase
 from scrapy.selector import Selector
-from scrapy import Request
+from bilei_crawler.ico_spider.utils.push_data import PushData
 from ..items import ICO, Financial, Resource, Rating, ShortReview, Social
-import util
-import cfscrape
 from ..spiders.BaseSpider import BaseSpider
-from scrapy.conf import settings
-from mongo_handler import MongoBase
 
 
 class ICOSpider(BaseSpider):
@@ -141,11 +138,12 @@ class ICOSpider(BaseSpider):
                         if 'screenshots' in title.lower():  # screenshots section
                             self._parse_screenshots(sel, item)
 
-            collection = MongoBase("ICOS")
+            collection = MongoBase("ICOs")
             result = collection.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
             # result = self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
             if result:
-                util.push_to_server(item)
+                pd = PushData()
+                pd.push_to_server(item)
 
             yield item
 
