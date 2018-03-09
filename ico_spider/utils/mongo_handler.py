@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from pymongo import MongoClient
-from datetime import datetime
 from scrapy.conf import settings
 
 
