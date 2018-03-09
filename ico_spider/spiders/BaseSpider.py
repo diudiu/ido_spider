@@ -44,7 +44,8 @@ class BaseSpider(Spider):
     def get_cookies(self):
         print 'get cookie'
         chrome_options = Options()
-        chrome_options.add_argument('--dns-prefetch-disable')
+        # chrome_options.add_argument('--dns-prefetch-disable')
+        chrome_options.add_argument('headless')
         driver = Chrome(chrome_options=chrome_options)
         wait = WebDriverWait(driver, 10)
 
