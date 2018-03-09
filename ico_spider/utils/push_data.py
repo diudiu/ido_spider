@@ -5,7 +5,7 @@ import json
 import requests
 from datetime import datetime
 from requests.exceptions import InvalidSchema
-from bilei_crawler.ico_spider.utils.mongo_handler import MongoBase
+from mongo_handler import MongoBase
 from scrapy.conf import settings
 
 

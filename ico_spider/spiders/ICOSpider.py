@@ -5,10 +5,10 @@ import re
 import unicodedata
 
 import pytz
-from bilei_crawler.ico_spider.utils import util
-from bilei_crawler.ico_spider.utils.mongo_handler import MongoBase
+from ..utils import util
+from ..utils.mongo_handler import MongoBase
 from scrapy.selector import Selector
-from bilei_crawler.ico_spider.utils.push_data import PushData
+from ..utils.push_data import PushData
 from ..items import ICO, Financial, Resource, Rating, ShortReview, Social
 from ..spiders.BaseSpider import BaseSpider
 
