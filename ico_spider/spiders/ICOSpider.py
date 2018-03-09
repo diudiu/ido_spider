@@ -18,17 +18,16 @@ from mongo_handler import MongoBase
 
 class ICOSpider(BaseSpider):
     name = "ico"
-    allowed_domains = ["icodrops.com", "icobench.com", "192.168.1.27"]
+    allowed_domains = ["icodrops.com", "icobench.com"]
 
     start_urls = []
 
-    def __init__(self, db_name=settings['MONGODB_DB'], mode='0', *args, **kwargs):
+    def __init__(self, mode='0', *args, **kwargs):
         super(ICOSpider, self).__init__(*args, **kwargs)
-        # self.crawlerDb = self.local_client[db_name]
         if mode == '0':  # crawl icodrops.com
             self.start_urls.append("https://icodrops.com/category/active-ico/")
-            # self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
-            # self.start_urls.append("https://icodrops.com/category/ended-ico/")
+            self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
+            self.start_urls.append("https://icodrops.com/category/ended-ico/")
 
     def start_requests(self):
         self.get_cookies()
@@ -105,19 +104,19 @@ class ICOSpider(BaseSpider):
                         financial_item['amountCollected'] = currentAmountCollected
 
                     # 解析 websit and whitepaper
-                    button_keys = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/div/text()")
-                    button_values = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/@href")
-                    button_keys = [button_key.extract().strip().lower() for button_key in button_keys]
-                    button_values = [button_val.extract().strip().lower() for button_val in button_values]
-                    for key, value in dict(zip(button_keys, button_values)).items():
-                        btn = Resource()
-                        if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
-                            item['file_urls'].append(value)
-                            value = util.hex_hash(value) + '.' + value.split('.')[-1].lower()
-                        btn['type'] = key
-                        btn['title'] = key
-                        btn['link'] = value
-                        item['resources'].append(btn)
+                    # button_keys = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/div/text()")
+                    # button_values = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/@href")
+                    # button_keys = [button_key.extract().strip().lower() for button_key in button_keys]
+                    # button_values = [button_val.extract().strip().lower() for button_val in button_values]
+                    # for key, value in dict(zip(button_keys, button_values)).items():
+                    #     btn = Resource()
+                    #     if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
+                    #         item['file_urls'].append(value)
+                    #         value = util.hex_hash(value) + '.' + value.split('.')[-1].lower()
+                    #     btn['type'] = key
+                    #     btn['title'] = key
+                    #     btn['link'] = value
+                    #     item['resources'].append(btn)
 
                     self._parse_social_links(section, item)
 
@@ -175,7 +174,7 @@ class ICOSpider(BaseSpider):
             key = short_review.xpath("./span/text()")[0].extract().strip()[:-1]
             value = short_review.xpath("./text()")[0].extract().strip()
             if 'exchanges' in key.lower():
-                sr['exchagnes'] = value
+                sr['exchanges'] = value
             elif 'number of team members' in key.lower():
                 sr['teamNumber'] = value
             elif 'team from' in key.lower():
@@ -298,7 +297,7 @@ class ICOSpider(BaseSpider):
         mydatetime = datetime.datetime.now()
         if item['status'] == 'active':
             date = icoItem.xpath('.//div[@class="date"]/@data-date')[0].extract()
-            item['endTime'] = util.parseDateStringToUTC(date, "%Y-%m-%d %H:%M:%S")
+            item['endTime'] = util.parseDateStringToUTC(date, "%Y-%m-%d %H:%M:%S")  # date有可能是非日期型字符串
         elif item['status'] == 'upcoming':
             date = icoItem.xpath('.//div[@class="date"]/text()')[0].extract().strip()
             if date and "TBA" not in date:

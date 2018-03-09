@@ -19,7 +19,6 @@ class BaseSpider(Spider):
     local_user_agent = None
     # 目前我们只存本地，如果有需要可以存prod
 
-
     def request(self, url, callback, item):
         """
          wrapper for scrapy.request
