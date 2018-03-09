@@ -8,10 +8,12 @@ from scrapy.spider import Spider
 import re
 from scrapy.selector import Selector
 from scrapy import Request
-from ico_spider.items import ICO, Financial, Resource, Rating, ShortReview, Social
+from ..items import ICO, Financial, Resource, Rating, ShortReview, Social
 import util
-from ico_spider.spiders.BaseSpider import BaseSpider
+import cfscrape
+from ..spiders.BaseSpider import BaseSpider
 from scrapy.conf import settings
+from mongo_handler import MongoBase
 
 
 class ICOSpider(BaseSpider):
@@ -20,13 +22,17 @@ class ICOSpider(BaseSpider):
 
     start_urls = []
 
-    def __init__(self, db_name=settings['MONGODB_DB'], mode='0', *args, **kwargs):
+    def __init__(self, mode='0', *args, **kwargs):
         super(ICOSpider, self).__init__(*args, **kwargs)
-        self.crawlerDb = self.local_client[db_name]
         if mode == '0':  # crawl icodrops.com
             self.start_urls.append("https://icodrops.com/category/active-ico/")
             self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
             self.start_urls.append("https://icodrops.com/category/ended-ico/")
+
+    def start_requests(self):
+        self.get_cookies()
+        for i, url in enumerate(self.start_urls):
+            yield self.request(url, self.parse, None)
 
     def parse(self, response):
 
@@ -65,7 +71,8 @@ class ICOSpider(BaseSpider):
                     # we need to recheck this logic
                     # 在这里爬开始结束时间的原因是这里的时间稍微准确点（倒计时或者含有小时级别时间的数据）,如果这里爬不到才去details page
                     self._parse_ico_list_page_start_end_time(icoItem, item)
-                    yield Request(path, callback=self.parse_ico_drops_items, meta={'item': item})
+                    # yield self.request(url, self.parse)
+                    yield self.request(path, self.parse_ico_drops_items, item)
 
         self.log('A response from %s just arrived!' % response.url)
 
@@ -97,19 +104,19 @@ class ICOSpider(BaseSpider):
                         financial_item['amountCollected'] = currentAmountCollected
 
                     # 解析 websit and whitepaper
-                    button_keys = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/div/text()")
-                    button_values = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/@href")
-                    button_keys = [button_key.extract().strip().lower() for button_key in button_keys]
-                    button_values = [button_val.extract().strip().lower() for button_val in button_values]
-                    for key, value in dict(zip(button_keys, button_values)).items():
-                        btn = Resource()
-                        if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
-                            item['file_urls'].append(value)
-                            value = util.hex_hash(value) + '.' + value.split('.')[-1].lower()
-                        btn['type'] = key
-                        btn['title'] = key
-                        btn['link'] = value
-                        item['resources'].append(btn)
+                    # button_keys = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/div/text()")
+                    # button_values = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/@href")
+                    # button_keys = [button_key.extract().strip().lower() for button_key in button_keys]
+                    # button_values = [button_val.extract().strip().lower() for button_val in button_values]
+                    # for key, value in dict(zip(button_keys, button_values)).items():
+                    #     btn = Resource()
+                    #     if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
+                    #         item['file_urls'].append(value)
+                    #         value = util.hex_hash(value) + '.' + value.split('.')[-1].lower()
+                    #     btn['type'] = key
+                    #     btn['title'] = key
+                    #     btn['link'] = value
+                    #     item['resources'].append(btn)
 
                     self._parse_social_links(section, item)
 
@@ -134,7 +141,11 @@ class ICOSpider(BaseSpider):
                         if 'screenshots' in title.lower():  # screenshots section
                             self._parse_screenshots(sel, item)
 
-            self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
+            collection = MongoBase("ICOS")
+            result = collection.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
+            # result = self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
+            if result:
+                util.push_to_server(item)
 
             yield item
 
@@ -163,9 +174,9 @@ class ICOSpider(BaseSpider):
             key = short_review.xpath("./span/text()")[0].extract().strip()[:-1]
             value = short_review.xpath("./text()")[0].extract().strip()
             if 'exchanges' in key.lower():
-                sr['exchagnes'] = value
+                sr['exchanges'] = value
             elif 'number of team members' in key.lower():
-                sr['teamNum'] = value
+                sr['teamNumber'] = value
             elif 'team from' in key.lower():
                 sr['teamFrom'] = value
             elif 'prototype' in key.lower():
@@ -286,7 +297,7 @@ class ICOSpider(BaseSpider):
         mydatetime = datetime.datetime.now()
         if item['status'] == 'active':
             date = icoItem.xpath('.//div[@class="date"]/@data-date')[0].extract()
-            item['endTime'] = util.parseDateStringToUTC(date, "%Y-%m-%d %H:%M:%S")
+            item['endTime'] = util.parseDateStringToUTC(date, "%Y-%m-%d %H:%M:%S")  # date有可能是非日期型字符串
         elif item['status'] == 'upcoming':
             date = icoItem.xpath('.//div[@class="date"]/text()')[0].extract().strip()
             if date and "TBA" not in date:

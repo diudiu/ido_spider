@@ -106,8 +106,8 @@ class Resource(scrapy.Item):
 
 
 class ShortReview(scrapy.Item):
-    exchagnes = Field()  # Exchanges
-    teamNum = Field()  # Number of Team Members
+    exchanges = Field()  # Exchanges
+    teamNumber = Field()  # Number of Team Members
     teamFrom = Field()  # Team from
     prototype = Field()  # Prototype
     unsoldTokens = Field()  # Unsold Tokens
