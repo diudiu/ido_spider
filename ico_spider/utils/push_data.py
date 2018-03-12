@@ -30,7 +30,7 @@ class PushData(object):
         ico = {"source": item.get("source", None),
                "ticker": item.get("ticker", None),
                "name": item.get("name", None),
-               "category": item.get("category", None),
+               "category": item.get("categories", None)[0],
                "description": item.get("description", None),
                "message": item.get("message", None),
                "country": item.get("country", None),
@@ -115,13 +115,13 @@ class PushData(object):
         json_data = json.dumps(self.data, default=str)
         try:
             result = requests.post(self.url, data=json_data, headers=headers)
-            if result.ok and result.json().get("code", None) == 0:
-                print("push data to server successful!", ico["name"])
-                # logging.info("push data to server successful! ico_name = {}".format(ico['name']))
-            else:
-                msg = result.json().get("msg", None)
-                print "Error-------->", result.json().get("code"), msg, ico["name"], "\n"
-                # logging.info("push data to server failure! msg = {}".format(msg), encoding='utf8')
+            # if result.ok and result.json().get("code", None) == 0:
+            #     print("push data to server successful!", ico["name"])
+            #     # logging.info("push data to server successful! ico_name = {}".format(ico['name']))
+            # else:
+            #     msg = result.json().get("msg", None)
+            #     print "Error-------->", result.json().get("code"), msg, ico["name"], "\n"
+            #     # logging.info("push data to server failure! msg = {}".format(msg), encoding='utf8')
 
         except InvalidSchema as e:
             print e
