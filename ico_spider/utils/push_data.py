@@ -3,7 +3,8 @@
 
 import json
 import requests
-from datetime import datetime
+import logging
+from datetime import datetime, date
 from requests.exceptions import InvalidSchema
 from mongo_handler import MongoBase
 from scrapy.conf import settings
@@ -25,6 +26,14 @@ class PushData(object):
         self.data = dict()
         self.url = self.server + '/push/ico/'
         self.data["requestId"] = 1
+
+    @property
+    def logger(self):
+        logger = logging.getLogger('pushdata')
+        return logging.LoggerAdapter(logger, {'spider': self})
+
+    def log(self, message, level=logging.DEBUG, **kw):
+        self.logger.log(level, message, **kw)
 
     def push_to_server(self, item):
         ico = {"source": item.get("source", None),
@@ -114,19 +123,19 @@ class PushData(object):
         headers = {'Content-type': 'application/json', 'Accept': '*/*'}
         json_data = json.dumps(self.data, default=str)
         try:
+            self.log("start push data to server!", logging.INFO)
             result = requests.post(self.url, data=json_data, headers=headers)
-            # if result.ok and result.json().get("code", None) == 0:
-            #     print("push data to server successful!", ico["name"])
-            #     # logging.info("push data to server successful! ico_name = {}".format(ico['name']))
-            # else:
-            #     msg = result.json().get("msg", None)
-            #     print "Error-------->", result.json().get("code"), msg, ico["name"], "\n"
-            #     # logging.info("push data to server failure! msg = {}".format(msg), encoding='utf8')
+            if result.ok and result.json().get("code", None) == 0:
+                self.log("push data to server successful! ico_name = {}".format(ico['name']), logging.INFO)
+            else:
+                msg = result.json().get("msg", None)
+                self.log("push data to server failure! msg = {}".format(msg), logging.INFO)
 
         except InvalidSchema as e:
             print e
 
     def _check_key_exsit(self, item, key):
+
         return key in item.keys()
 
 
@@ -146,6 +155,6 @@ def string_to_datetime(value):
 if __name__ == '__main__':
     collection = MongoBase("ICOs")
     pd = PushData()
-    items = collection.find()
+    items = collection.find_one()
     for item in items:
         pd.push_to_server(item)

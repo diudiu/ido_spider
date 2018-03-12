@@ -235,8 +235,6 @@ class ICOSpider(BaseSpider):
             value = li.xpath('text()')[0].extract()
             value = unicodedata.normalize("NFKD", value)
             key = unicodedata.normalize("NFKD", key)
-            print (key)
-            print (value)
             if 'Ticker' in key:
                 item['ticker'] = value
             elif 'Token type' in key:
