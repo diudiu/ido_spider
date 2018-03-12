@@ -1,4 +1,5 @@
 from os.path import expanduser
+from unipath import Path
 import config
 
 home = expanduser("~")
@@ -25,8 +26,11 @@ ITEM_PIPELINES = {
 MONGODB_SERVER = config.MONGODB_SERVER
 MONGODB_PORT = config.MONGODB_PORT
 MONGODB_DB = "ICO"
-IMAGES_STORE = 'images'
-FILES_STORE ='files'
+
+PROJECT_DIR = Path(__file__).parent.parent
+IMAGES_STORE = PROJECT_DIR.child('images')
+FILES_STORE = PROJECT_DIR.child('files')
+VIDEO_STORE = PROJECT_DIR.child('video')
 MONGODB_ADD_TIMESTAMP = True
 
 SERVER_ADDR = config.SERVER_ADDR

@@ -100,20 +100,11 @@ class ICOSpider(BaseSpider):
                             section.xpath('.//div[contains(@class,"money-goal")]/text()').extract()[0].strip()
                         financial_item['amountCollected'] = currentAmountCollected
 
+                    # 解析 media 图片， 如果media是图片就保存在resource里，否则用另一个spider下载
+                    self._parse_medio_img(response, item)
+
                     # 解析 websit and whitepaper
-                    # button_keys = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/div/text()")
-                    # button_values = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/@href")
-                    # button_keys = [button_key.extract().strip().lower() for button_key in button_keys]
-                    # button_values = [button_val.extract().strip().lower() for button_val in button_values]
-                    # for key, value in dict(zip(button_keys, button_values)).items():
-                    #     btn = Resource()
-                    #     if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
-                    #         item['file_urls'].append(value)
-                    #         value = util.hex_hash(value) + '.' + value.split('.')[-1].lower()
-                    #     btn['type'] = key
-                    #     btn['title'] = key
-                    #     btn['link'] = value
-                    #     item['resources'].append(btn)
+                    self._parse_website_and_whitepaper(section, item)
 
                     self._parse_social_links(section, item)
 
@@ -223,6 +214,19 @@ class ICOSpider(BaseSpider):
             screenshots['type'] = 'screenshots'
             item['resources'].append(screenshots)
 
+    def _parse_medio_img(self, response, item):
+        try:
+            img = response.xpath("//div[@class='ico-media']/div/img/@src")[0]
+            item['image_urls'].append(img)
+            media = Resource()
+            hex_dig = util.hex_hash(img)
+            media['link'] = hex_dig + '.' + img.split('.')[-1]
+            media['type'] = 'media'
+            media['title'] = 'media'
+            item['resources'].append(media)
+        except IndexError:
+            pass
+
     def _parse_financial(self, section, item):
         li_element = section.xpath('.//li')
         financial_item = item['financial']
@@ -331,6 +335,21 @@ class ICOSpider(BaseSpider):
                     last_year = str(mydatetime.year - 1)
                     utc_date = util.parseDateStringToUTC(date + ' ' + last_year, '%d %b %Y')
                 item['endTime'] = utc_date
+
+    def _parse_website_and_whitepaper(self, section, item):
+        button_keys = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/div/text()")
+        button_values = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/@href")
+        button_keys = [button_key.extract().strip().lower() for button_key in button_keys]
+        button_values = [button_val.extract().strip().lower() for button_val in button_values]
+        for key, value in dict(zip(button_keys, button_values)).items():
+            btn = Resource()
+            if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
+                item['file_urls'].append(value)
+                value = util.hex_hash(value) + '.' + value.split('.')[-1].lower()
+            btn['type'] = key
+            btn['title'] = key
+            btn['link'] = value
+            item['resources'].append(btn)
 
     def _parse_social_links(self, section, item):
         soc_links = section.xpath('.//div[@class="soc_links"]/a/@href').extract()

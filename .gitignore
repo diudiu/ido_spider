@@ -60,6 +60,7 @@ target/
 images/
 *.iml
 files/
+video/
 
 #local config file
 config.py
