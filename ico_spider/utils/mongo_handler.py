@@ -37,5 +37,7 @@ class MongoBase(object):
     def update(self, *args, **kwargs):
         return self.collection.update(*args, **kwargs)
 
-    def find(self):
-        return self.collection.find()
+    def find_one(self, query=None):
+        if query is None:
+            query = {}
+        return self.collection.find_one(query)

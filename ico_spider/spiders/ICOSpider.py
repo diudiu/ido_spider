@@ -216,12 +216,12 @@ class ICOSpider(BaseSpider):
 
     def _parse_medio_img(self, response, item):
         try:
-            img = response.xpath("//div[@class='ico-media']/div/img/@src")[0]
+            img = response.xpath("//div[@class='ico-media']/div/img/@src")[0].extract()
             item['image_urls'].append(img)
             media = Resource()
             hex_dig = util.hex_hash(img)
             media['link'] = hex_dig + '.' + img.split('.')[-1]
-            media['type'] = 'media'
+            media['type'] = 'image'
             media['title'] = 'media'
             item['resources'].append(media)
         except IndexError:
