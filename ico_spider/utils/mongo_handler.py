@@ -51,3 +51,8 @@ class MongoBase(object):
         if query is None:
             query = {}
         return self.collection.find_one(query)
+
+    def find(self, query=None):
+        if query is None:
+            query = {}
+        return self.collection.find(query)
