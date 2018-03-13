@@ -2,6 +2,7 @@
 
 from pymongo import MongoClient
 from scrapy.conf import settings
+from datetime import datetime
 
 
 def singleton(cls):
@@ -31,11 +32,20 @@ class MongoBase(object):
     def __del__(self):
         self.connection.close()
 
-    def insert(self, data):
+    def insert_one(self, data):
+        data.update({'create_time': datetime.now()})
         return self.collection.insert_one(data)
 
-    def update(self, *args, **kwargs):
-        return self.collection.update(*args, **kwargs)
+    def update_one(self, query=None, data=None, **kwargs):
+        if self.collection.find(query).count() == 0:
+            res = self.insert_one(data)
+        else:
+            keys = data.keys()
+            if '_id' in keys:
+                del data['_id']
+            data.update({'update_time': datetime.now()})
+            res = self.collection.update_one(query, {'$set': data}, **kwargs)
+        return res
 
     def find_one(self, query=None):
         if query is None:
