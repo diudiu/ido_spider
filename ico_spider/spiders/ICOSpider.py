@@ -128,11 +128,15 @@ class ICOSpider(BaseSpider):
 
                         if 'screenshots' in title.lower():  # screenshots section
                             self._parse_screenshots(sel, item)
-
+            # 判断是否更新，并推送数据
             collection = MongoBase("ICOs")
-            result = collection.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
-            # result = self.crawlerDb.ICOs.update({'source': item['source'], 'ticker': item['ticker']}, dict(item), upsert=True)
-            if result:
+            old = collection.find_one({'source': item['source'], 'ticker': item['ticker']})
+            old.pop('_id', None)
+            old.pop('create_time', None)
+            old.pop('update_time', None)
+            new = dict(item)
+            if self.compare_ico(old, new):
+                collection.update_one({'source': item['source'], 'ticker': item['ticker']}, new, upsert=True)
                 pd = PushData()
                 pd.push_to_server(item)
 
@@ -378,3 +382,6 @@ class ICOSpider(BaseSpider):
             if 'network' in social_network:
                 social_network['link'] = link
                 item['social_links'].append(social_network)
+
+    def compare_ico(self, old, new):
+        return cmp(old, new)
