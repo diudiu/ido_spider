@@ -45,14 +45,15 @@ class VideoSpider(BaseSpider):
             print iframe_url
             yield self.request(iframe_url, self.download_video, item)
         except IndexError:
-            image_url = response.xpath("//div[@class='ico-media']/div/img/@src").extract()[0]
+            image_url = response.xpath("//div[@class='ico-media']/div/img/@src").extract()
             print "Error iframe", image_url
 
     def download_video(self, response):
         self.log('download: A response from %s just arrived!' % response.url)
         item = response.meta.get('item')
+        filename = item['name'].replace(' ', '')
         save_path = settings["VIDEO_STORE"]
         video_url = response.xpath("//link[contains(@href, 'youtube.com/watch')]/@href").extract()[0]
         self.log('download video_url: {}'.format(video_url))
         yt = YouTube(video_url)
-        yt.streams.first().download(save_path, filename=item['name'])
+        yt.streams.first().download(save_path, filename=filename)

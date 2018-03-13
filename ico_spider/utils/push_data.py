@@ -128,7 +128,7 @@ class PushData(object):
             if result.ok and result.json().get("code", None) == 0:
                 self.log("push data to server successful! ico_name = {}".format(ico['name']), logging.INFO)
             else:
-                msg = result.json().get("msg", None)
+                msg = result.json().get("code", None)
                 self.log("push data to server failure! msg = {}".format(msg), logging.INFO)
 
         except InvalidSchema as e:
@@ -155,6 +155,6 @@ def string_to_datetime(value):
 if __name__ == '__main__':
     collection = MongoBase("ICOs")
     pd = PushData()
-    items = collection.find_one()
+    items = collection.find()
     for item in items:
         pd.push_to_server(item)
