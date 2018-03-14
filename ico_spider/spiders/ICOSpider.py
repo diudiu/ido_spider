@@ -131,9 +131,10 @@ class ICOSpider(BaseSpider):
             # 判断是否更新，并推送数据
             collection = MongoBase("ICOs")
             old = collection.find_one({'source': item['source'], 'ticker': item['ticker']})
-            old.pop('_id', None)
-            old.pop('create_time', None)
-            old.pop('update_time', None)
+            if old:
+                old.pop('_id', None)
+                old.pop('create_time', None)
+                old.pop('update_time', None)
             new = dict(item)
             if self.compare_ico(old, new):
                 collection.update_one({'source': item['source'], 'ticker': item['ticker']}, new, upsert=True)
