@@ -123,13 +123,14 @@ class PushData(object):
         headers = {'Content-type': 'application/json', 'Accept': '*/*'}
         json_data = json.dumps(self.data, default=str)
         try:
-            self.log("start push data to server!", logging.INFO)
+            self.log("start push data to server! data = {}".format(json_data), logging.INFO)
             result = requests.post(self.url, data=json_data, headers=headers)
             if result.ok and result.json().get("code", None) == 0:
-                self.log("push data to server successful! ico_name = {}".format(ico['name']), logging.INFO)
+                msg = result.json().get("msg", None).encode('utf-8')
+                self.log("push data to server successful! ico_name = {}, msg = {}".format(ico['name'], msg), logging.INFO)
             else:
-                msg = result.json().get("code", None)
-                self.log("push data to server failure! msg = {}".format(msg), logging.INFO)
+                msg = result.json().get("msg", None).encode('utf-8')
+                self.log("push data to server failure! ico_name = {}, msg = {}".format(ico['name'], msg), logging.INFO)
 
         except InvalidSchema as e:
             print e
