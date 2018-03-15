@@ -39,10 +39,10 @@ class PushData(object):
         ico = {"source": item.get("source", None),
                "ticker": item.get("ticker", None),
                "name": item.get("name", None),
-               "category": item.get("categories", None)[0],
-               "description": item.get("description", None),
-               "message": item.get("message", None),
-               "country": item.get("country", None),
+               "categoryEn": item.get("categories", None)[0],
+               "descriptionEn": item.get("description", None),
+               "messageEn": item.get("message", None),
+               "countryEn": item.get("country", None),
                "avatar": item.get("avatar", None),
                "status": item.get("status", None),
                "startTime": item.get("startTime", None),
@@ -58,72 +58,75 @@ class PushData(object):
 
         if self._check_key_exsit(item, 'financial'):
             financial = {
-                "token": item["financial"].get("token", None),
-                "platform": item["financial"].get("platform", None),
-                "type": item["financial"].get("type", None),
-                "coins_accepted": item["financial"].get("coins_accepted", None),
-                "percentage_distributed_ico": item["financial"].get("percentage_distributed_ico", None),
-                "softCap": item["financial"].get("softCap", None),
-                "hardCap": item["financial"].get("hardCap", None),
-                "amountCollected": item["financial"].get("amountCollected", None),
-                "percentageCollected": item["financial"].get("percentageCollected", None),
-                "tokenNumber": item["financial"].get("tokenNumber", None),
-                "minPersonalCap": item["financial"].get("minPersonalCap", None),
-                "maxPersonalCap": item["financial"].get("maxPersonalCap", None),
-                "bonusInfo": item["financial"].get("bonusInfo", None),
-                "bountyInfo": item["financial"].get("bountyInfo", None),
-                "kycInfo": item["financial"].get("kycInfo", None),
-                "preIcoPrice": item["financial"].get("preIcoPrice", None),
-                "preSaleAmount": item["financial"].get("preSaleAmount", None),
-                "tokenIssuePolicy": item["financial"].get("tokenIssuePolicy", None),
-                "icoPrice": item["financial"].get("icoPrice", None),
-                "currentPrice": item["financial"].get("currentPrice", None),
+                "tokenEn": item["financial"].get("token", None),
+                "platformEn": item["financial"].get("platform", None),
+                "typeEn": item["financial"].get("type", None),
+                "coinsAcceptedEn": item["financial"].get("coins_accepted", None),
+                "percentageDistributedIcoEn": item["financial"].get("percentage_distributed_ico", None),
+                "softCapEn": item["financial"].get("softCap", None),
+                "hardCapEn": item["financial"].get("hardCap", None),
+                "amountCollectedEn": item["financial"].get("amountCollected", None),
+                "percentageCollectedEn": item["financial"].get("percentageCollected", None),
+                "tokenNumberEn": item["financial"].get("tokenNumber", None),
+                "minPersonalCapEn": item["financial"].get("minPersonalCap", None),
+                "maxPersonalCapEn": item["financial"].get("maxPersonalCap", None),
+                "bonusInfoEn": item["financial"].get("bonusInfo", None),
+                "bountyInfoEn": item["financial"].get("bountyInfo", None),
+                "kycInfoEn": item["financial"].get("kycInfo", None),
+                "preIcoPriceEn": item["financial"].get("preIcoPrice", None),
+                "preSaleAmountEn": item["financial"].get("preSaleAmount", None),
+                "tokenIssuePolicyEn": item["financial"].get("tokenIssuePolicy", None),
+                "icoPriceEn": item["financial"].get("icoPrice", None),
+                "currentPriceEn": item["financial"].get("currentPrice", None),
             }
             # financial.update({"tokenNumber": string_to_int(financial["tokenNumber"])})
-            financial.update({"preIcoPrice": string_to_int(financial["preIcoPrice"])})
+            financial.update({"preIcoPriceEn": string_to_int(financial["preIcoPriceEn"])})
             self.data.update({"financial": financial})
 
         if self._check_key_exsit(item, 'rating'):
             rating = {
-                "teamScore": item["rating"].get("teamScore", None),
-                "visionScore": item["rating"].get("visionScore", None),
-                "prodScore": item["rating"].get("prodScore", None),
-                "riskLevel": item["rating"].get("riskLevel", None),
-                "hypoLevel": item["rating"].get("hypoLevel", None),
-                "roiScore": item["rating"].get("roiScore", None),
+                "teamScoreEn": item["rating"].get("teamScore", None),
+                "visionScoreEn": item["rating"].get("visionScore", None),
+                "prodScoreEn": item["rating"].get("prodScore", None),
+                "riskLevelEn": item["rating"].get("riskLevel", None),
+                "hypoLevelEn": item["rating"].get("hypoLevel", None),
+                "roiScoreEn": item["rating"].get("roiScore", None),
                 "totalScore": item["rating"].get("totalScore", None),
-                "commenter": item["rating"].get("commenter", None),
-                "comment": item["rating"].get("comment", None),
+                "commenterEn": item["rating"].get("commenter", None),
+                "commentEn": item["rating"].get("comment", None),
             }
             self.data.update({"rating": rating})
 
         if self._check_key_exsit(item, 'shortreview'):
-            shortreview = {
-                "exchagnes": item["shortreview"].get("exchagnes", None),
-                "teamNumber": item["shortreview"].get("teamNumber", None),
-                "teamFrom": item["shortreview"].get("teamFrom", None),
-                "prototype": item["shortreview"].get("prototype", None),
-                "unsoldTokens": item["shortreview"].get("unsoldTokens", None),
-                "company": item["shortreview"].get("company", None),
-                "activeFrom": item["shortreview"].get("activeFrom", None),
-                "socialActivity": item["shortreview"].get("socialActivity", None),
+            shortReview = {
+                "exchagnesEn": item["shortreview"].get("exchagnes", None),
+                "teamNumberEn": item["shortreview"].get("teamNumber", None),
+                "teamFromEn": item["shortreview"].get("teamFrom", None),
+                "prototypeEn": item["shortreview"].get("prototype", None),
+                "unsoldTokensEn": item["shortreview"].get("unsoldTokens", None),
+                "companyEn": item["shortreview"].get("company", None),
+                "activeFromEn": item["shortreview"].get("activeFrom", None),
+                "socialActivityEn": item["shortreview"].get("socialActivity", None),
                 "roleOfToken": item["shortreview"].get("roleOfToken", None),
-                "other": item["shortreview"].get("other", None),
+                # "otherEn": item["shortreview"].get("other", None),
             }
-            self.data.update({"shortreview": shortreview})
+            self.data.update({"shortReview": shortReview})
 
         if self._check_key_exsit(item, 'social_links'):
-            social = item['social_links']
-            self.data.update({"social": social})
+            socials = item['social_links']
+            self.data.update({"socials": socials})
 
-        if self._check_key_exsit(item, 'resource'):
-            resource = item["resource"]
-            self.data.update({"resource": resource})
+        if self._check_key_exsit(item, 'resources'):
+            resources = item["resources"]
+            for res in resources:
+                res['titleEn'] = res.pop('title', None)
+            self.data.update({"resources": resources})
 
         headers = {'Content-type': 'application/json', 'Accept': '*/*'}
         json_data = json.dumps(self.data, default=str)
         try:
             self.log("start push data to server! data = {}".format(json_data), logging.INFO)
+            print json_data
             result = requests.post(self.url, data=json_data, headers=headers)
             if result.ok and result.json().get("code", None) == 0:
                 msg = result.json().get("msg", None).encode('utf-8')
@@ -156,6 +159,6 @@ def string_to_datetime(value):
 if __name__ == '__main__':
     collection = MongoBase("ICOs")
     pd = PushData()
-    items = collection.find()
+    items = collection.find().limit(1)
     for item in items:
         pd.push_to_server(item)

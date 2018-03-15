@@ -23,8 +23,8 @@ class ICOSpider(BaseSpider):
         super(ICOSpider, self).__init__(*args, **kwargs)
         if mode == '0':  # crawl icodrops.com
             self.start_urls.append("https://icodrops.com/category/active-ico/")
-            self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
-            self.start_urls.append("https://icodrops.com/category/ended-ico/")
+            # self.start_urls.append("https://icodrops.com/category/upcoming-ico/")
+            # self.start_urls.append("https://icodrops.com/category/ended-ico/")
 
     def start_requests(self):
         self.get_cookies()
@@ -137,9 +137,10 @@ class ICOSpider(BaseSpider):
                 old.pop('update_time', None)
             new = dict(item)
             if self.compare_ico(old, new):
-                collection.update_one({'source': item['source'], 'ticker': item['ticker']}, new, upsert=True)
-                pd = PushData()
-                pd.push_to_server(item)
+                pass
+            collection.update_one({'source': item['source'], 'ticker': item['ticker']}, new, upsert=True)
+            pd = PushData()
+            pd.push_to_server(item)
 
             yield item
 
@@ -230,6 +231,13 @@ class ICOSpider(BaseSpider):
             media['title'] = 'media'
             item['resources'].append(media)
         except IndexError:
+            iframe_url = response.css('iframe::attr(src)').extract()[0]
+            video_name = item['name'].replace(' ', '').replace('.', '')
+            media = Resource()
+            media['link'] = video_name + '.mp4'
+            media['type'] = 'video'
+            media['title'] = 'media'
+        except:
             pass
 
     def _parse_financial(self, section, item):

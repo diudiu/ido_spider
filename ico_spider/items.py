@@ -103,6 +103,7 @@ class Resource(scrapy.Item):
     cover = Field()  # some resource like video might have a cover
     type = Field()  # one of screenshot, video, website, bounty,onepager,prototype,whitepaper,white list
     title = Field()
+    titleEn = Field()
 
 
 class ShortReview(scrapy.Item):
