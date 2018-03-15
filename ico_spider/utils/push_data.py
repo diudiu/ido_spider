@@ -138,6 +138,11 @@ class PushData(object):
         except InvalidSchema as e:
             print e
 
+    def push_data(self, item):
+        collection = MongoBase("ICOs")
+        data = collection.find_one({'source': item['source'], 'ticker': item['ticker']})
+        self.push_to_server(data)
+
     def _check_key_exsit(self, item, key):
 
         return key in item.keys()
@@ -159,6 +164,6 @@ def string_to_datetime(value):
 if __name__ == '__main__':
     collection = MongoBase("ICOs")
     pd = PushData()
-    items = collection.find().limit(1)
+    items = collection.find().limit
     for item in items:
         pd.push_to_server(item)
