@@ -356,6 +356,8 @@ class ICOSpider(BaseSpider):
             if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
                 item['file_urls'].append(value)
                 value = util.hex_hash(value) + '.' + value.split('.')[-1].lower()
+            if key == 'website':
+                value = value.split("?")[0]
             btn['type'] = key
             btn['title'] = key
             btn['link'] = value

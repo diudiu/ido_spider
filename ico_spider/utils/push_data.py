@@ -164,6 +164,6 @@ def string_to_datetime(value):
 if __name__ == '__main__':
     collection = MongoBase("ICOs")
     pd = PushData()
-    items = collection.find().limit
+    items = collection.find()
     for item in items:
         pd.push_to_server(item)
