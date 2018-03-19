@@ -92,8 +92,7 @@ class ICOSpider(BaseSpider):
                         hex_dig = util.hex_hash(img)
                         item['avatar'] = hex_dig + '.' + img.split('.')[-1]
                     description = \
-                        section.xpath('normalize-space(.//div[@class="ico-description"]/text())')[0].extract()[
-                            0].strip()
+                        section.xpath('normalize-space(.//div[@class="ico-description"]/text())')[0].extract().strip()
                     item['description'] = description
                     if item['status'] is not 'upcoming':
                         currentAmountCollected = \
@@ -137,6 +136,7 @@ class ICOSpider(BaseSpider):
                 old.pop('update_time', None)
             new = dict(item)
             if self.compare_ico(old, new):
+
                 collection.update_one({'source': item['source'], 'ticker': item['ticker']}, new, upsert=True)
                 pd = PushData()
                 pd.push_data(item)
@@ -236,6 +236,7 @@ class ICOSpider(BaseSpider):
             media['link'] = video_name + '.mp4'
             media['type'] = 'video'
             media['title'] = 'media'
+            item['resources'].append(media)
         except:
             pass
 
@@ -353,10 +354,10 @@ class ICOSpider(BaseSpider):
         button_values = [button_val.extract().strip().lower() for button_val in button_values]
         for key, value in dict(zip(button_keys, button_values)).items():
             btn = Resource()
-            if key == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
+            if key.lower() == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
                 item['file_urls'].append(value)
                 value = util.hex_hash(value) + '.' + value.split('.')[-1].lower()
-            if key == 'website':
+            if key.lower() == 'website':
                 value = value.split("?")[0]
             btn['type'] = key
             btn['title'] = key
