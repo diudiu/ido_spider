@@ -175,7 +175,7 @@ class ICOSpider(BaseSpider):
                 sr['teamFrom'] = value
             elif 'prototype' in key.lower():
                 sr['prototype'] = value
-            elif 'unsold Tokens' in key.lower():
+            elif 'unsold tokens' in key.lower():
                 sr['unsoldTokens'] = value
             elif 'registered company' in key.lower():
                 sr['company'] = value
