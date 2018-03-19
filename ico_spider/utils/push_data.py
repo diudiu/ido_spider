@@ -99,7 +99,7 @@ class PushData(object):
 
         if self._check_key_exsit(item, 'shortreview'):
             shortReview = {
-                "exchagnesEn": item["shortreview"].get("exchagnes", None),
+                "exchangesEn": item["shortreview"].get("exchanges", None),
                 "teamNumberEn": item["shortreview"].get("teamNumber", None),
                 "teamFromEn": item["shortreview"].get("teamFrom", None),
                 "prototypeEn": item["shortreview"].get("prototype", None),

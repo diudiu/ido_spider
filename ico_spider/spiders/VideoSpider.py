@@ -51,9 +51,9 @@ class VideoSpider(BaseSpider):
     def download_video(self, response):
         self.log('download: A response from %s just arrived!' % response.url)
         item = response.meta.get('item')
-        filename = item['name'].replace(' ', '')
+        filename = item['name'].replace(' ', '').replace('.', '')
         save_path = settings["VIDEO_STORE"]
         video_url = response.xpath("//link[contains(@href, 'youtube.com/watch')]/@href").extract()[0]
         self.log('download video_url: {}'.format(video_url))
         yt = YouTube(video_url)
-        yt.streams.first().download(save_path, filename=filename)
+        yt.streams.filter(subtype='mp4').first().download(save_path, filename=filename)
