@@ -280,7 +280,7 @@ class ICOSpider(BaseSpider):
             elif 'KYC' in key:
                 financial_item['kycInfo'] = value
             elif 'max' in key.lower() and 'min' in key.lower() and 'cap' in key.lower():
-                financial_item['minPersonalCap'] = value.split('/')[1].strip()
+                financial_item['minPersonalCap'] = value.split('/')[0].strip()
                 financial_item['maxPersonalCap'] = value.split('/')[1].strip()
 
     def _parse_details_page_start_end_time(self, section, item):
