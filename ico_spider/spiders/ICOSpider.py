@@ -90,7 +90,7 @@ class ICOSpider(BaseSpider):
                         img = icon[0].xpath('.//img/@data-src')[0].extract()
                         item['image_urls'].append(img)
                         hex_dig = util.hex_hash(img)
-                        item['avatar'] = hex_dig + '.' + img.split('.')[-1]
+                        item['avatar'] = hex_dig + '.jpg'
                     description = \
                         section.xpath('normalize-space(.//div[@class="ico-description"]/text())')[0].extract().strip()
                     item['description'] = description
@@ -209,7 +209,7 @@ class ICOSpider(BaseSpider):
             img = ico_screenshot.xpath(".//img/@src")[0].extract()
             item['image_urls'].append(img)
             hex_dig = util.hex_hash(img)
-            screenshots['link'] = hex_dig + '.' + img.split('.')[-1]
+            screenshots['link'] = hex_dig + '.jpg'
             try:
                 key = ico_screenshot.xpath(".//div[contains(@class, 'screenshot-title')]/text()").extract()[0]
             except IndexError:
@@ -225,7 +225,7 @@ class ICOSpider(BaseSpider):
             item['image_urls'].append(img)
             media = Resource()
             hex_dig = util.hex_hash(img)
-            media['link'] = hex_dig + '.' + img.split('.')[-1]
+            media['link'] = hex_dig + '.jpg'
             media['type'] = 'image'
             media['title'] = 'media'
             item['resources'].append(media)
@@ -280,7 +280,7 @@ class ICOSpider(BaseSpider):
             elif 'KYC' in key:
                 financial_item['kycInfo'] = value
             elif 'max' in key.lower() and 'min' in key.lower() and 'cap' in key.lower():
-                financial_item['minPersonalCap'] = value.split('/')[1].strip()
+                financial_item['minPersonalCap'] = value.split('/')[0].strip()
                 financial_item['maxPersonalCap'] = value.split('/')[1].strip()
 
     def _parse_details_page_start_end_time(self, section, item):
