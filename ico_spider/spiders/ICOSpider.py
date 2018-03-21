@@ -351,7 +351,7 @@ class ICOSpider(BaseSpider):
         button_keys = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/div/text()")
         button_values = section.xpath(".//div[contains(@class, 'ico-right-col')]/a/@href")
         button_keys = [button_key.extract().strip().lower() for button_key in button_keys]
-        button_values = [button_val.extract().strip().lower() for button_val in button_values]
+        button_values = [button_val.extract().strip() for button_val in button_values]
         for key, value in dict(zip(button_keys, button_values)).items():
             btn = Resource()
             if key.lower() == 'whitepaper' and value.split('.')[-1].lower() in ['pdf', 'doc', 'docx']:
