@@ -14,27 +14,28 @@ class ICOBenchSpider(Spider):
     allowed_domains = ["icobench.com"]
     domains = "https://icobench.com"
 
-    base_url = "https://icobench.com/icos?page={}"
-    page = 1
-    max_page = 213
-    start_urls = [base_url.format(1)]
+    def __init__(self, start=1, end=213, *args, **kwargs):
+        super(ICOBenchSpider, self).__init__(*args, **kwargs)
+        self.current_page = start
+        self.max_page = end
+        self.base_url = "https://icobench.com/icos?page={}"
+        self.start_urls = [self.base_url.format(self.current_page)]
 
     def parse(self, response):
+        self.log("正在解析第{}页".format(self.current_page))
+
         no_data = response.xpath(".//div[@class='ico_list']/div[@class='no_data']")
-        if no_data:
-            print self.page
-            print no_data.extract()
+        if no_data or self.current_page > self.max_page:
+            self.log("no data = {}".format(no_data))
+            self.log("没有数据或超过指定页，爬虫退出！最大爬取页为:{}".format(self.max_page))
             return
-        else:
-            self.page += 1
-            if self.page > self.max_page:
-                return
-            uris = response.xpath(".//div[@class='content']/a/@href").extract()
 
-            for uri in uris:
-                yield Request(self.domains + uri, self.parse_detail)
+        uris = response.xpath(".//div[@class='content']/a/@href").extract()
+        for uri in uris:
+            yield Request(self.domains + uri, self.parse_detail)
 
-        yield Request(self.base_url.format(self.page), self.parse)
+        self.current_page += 1
+        yield Request(self.base_url.format(self.current_page), self.parse)
 
     def parse_detail(self, response):
         item = ICO()
@@ -45,7 +46,6 @@ class ICOBenchSpider(Spider):
         item['resources'] = []
         item['social_links'] = []
         item['mileStones'] = []
-
 
         # information
         self.parse_information(response, item)
@@ -140,7 +140,7 @@ class ICOBenchSpider(Spider):
         values = [i.strip() for i in values]
 
         for key, value in dict(zip(keys, values)).items():
-            item["ticker"] = ''   # 设置ticker是为了兼容icodrops
+            item["ticker"] = item['name']   # 设置ticker是为了兼容icodrops
             if key.lower() == "token":
                 financial["token"] = value
                 item["ticker"] = value
