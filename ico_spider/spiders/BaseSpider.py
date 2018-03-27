@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+from scrapy import Spider
 from scrapy.http import Headers
-from scrapy.spider import Spider
 import scrapy
 from selenium import webdriver
 from pymongo import MongoClient
