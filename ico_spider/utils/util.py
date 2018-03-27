@@ -39,3 +39,7 @@ def parseDateStringToDateObj(date, formatter):
     except ValueError as error:
         print ('error parsing ' + date, error)
         return None
+
+
+def compare_ico(old, new):
+    return cmp(old, new)

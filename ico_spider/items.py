@@ -79,6 +79,7 @@ class Financial(scrapy.Item):
     tokenIssuePolicy = Field()
     ICOPrice = Field()
     currentPrice = Field()
+    other = Field()
 
 
 class Rating(scrapy.Item):
