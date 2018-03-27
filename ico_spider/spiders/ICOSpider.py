@@ -15,7 +15,7 @@ from ..spiders.BaseSpider import BaseSpider
 
 class ICOSpider(BaseSpider):
     name = "icodrops"
-    allowed_domains = ["icodrops.com", "icobench.com"]
+    allowed_domains = ["icodrops.com"]
 
     start_urls = []
 
