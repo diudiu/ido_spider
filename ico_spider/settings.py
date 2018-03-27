@@ -25,7 +25,7 @@ ITEM_PIPELINES = {
 }
 MONGODB_SERVER = config.MONGODB_SERVER
 MONGODB_PORT = config.MONGODB_PORT
-MONGODB_DB = "ICO"
+MONGODB_DB = config.MONGODB_DB
 
 PROJECT_DIR = Path(__file__).parent.parent
 IMAGES_STORE = PROJECT_DIR.child('images')

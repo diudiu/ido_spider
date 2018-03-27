@@ -14,7 +14,7 @@ from ..spiders.BaseSpider import BaseSpider
 
 
 class ICOSpider(BaseSpider):
-    name = "ico"
+    name = "icodrops"
     allowed_domains = ["icodrops.com", "icobench.com"]
 
     start_urls = []
@@ -128,17 +128,17 @@ class ICOSpider(BaseSpider):
                         if 'screenshots' in title.lower():  # screenshots section
                             self._parse_screenshots(sel, item)
             # 判断是否更新，并推送数据
-            collection = MongoBase("ICOs")
+            coll = "icodrops"
+            collection = MongoBase(coll)
             old = collection.find_one({'source': item['source'], 'ticker': item['ticker']})
             if old:
                 old.pop('_id', None)
                 old.pop('create_time', None)
                 old.pop('update_time', None)
             new = dict(item)
-            if self.compare_ico(old, new):
-
+            if util.compare_ico(old, new):
                 collection.update_one({'source': item['source'], 'ticker': item['ticker']}, new, upsert=True)
-                pd = PushData()
+                pd = PushData(coll)
                 pd.push_data(item)
 
             yield item
@@ -394,5 +394,3 @@ class ICOSpider(BaseSpider):
                 social_network['link'] = link
                 item['social_links'].append(social_network)
 
-    def compare_ico(self, old, new):
-        return cmp(old, new)

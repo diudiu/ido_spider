@@ -21,8 +21,9 @@ class CJsonEncoder(json.JSONEncoder):
 
 
 class PushData(object):
-    def __init__(self):
+    def __init__(self, collection):
         self.server = settings['SERVER_ADDR']
+        self.collection = collection
         self.data = dict()
         self.url = self.server + '/push/ico/'
         self.data["requestId"] = 1
@@ -139,7 +140,7 @@ class PushData(object):
             print e
 
     def push_data(self, item):
-        collection = MongoBase("ICOs")
+        collection = MongoBase(self.collection)
         data = collection.find_one({'source': item['source'], 'ticker': item['ticker']})
         self.push_to_server(data)
 
