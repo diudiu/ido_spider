@@ -130,8 +130,8 @@ class ICOBenchSpider(Spider):
             item['status'] = 'active'
             period = financial_data.xpath(".//div[@class='row']/div/small/text()").extract()[0]
             start_time, end_time = period.split(' - ')
-            item["startTime"] = start_time
-            item["endTime"] = end_time
+            item["startTime"] = start_time + " 0:0:0"
+            item["endTime"] = end_time + " 0:0:0"
 
         keys = financial_data.xpath(".//div[@class='data_row']/div/text()").extract()
         values = financial_data.xpath(".//div[@class='data_row']/div/b/text() |"
