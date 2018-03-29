@@ -49,6 +49,7 @@ class ICOBenchSpider(Spider):
 
         # information
         self.parse_information(response, item)
+        self.parse_about(response, item)
 
         # rating
         self.parse_rating(response, item)
@@ -112,7 +113,8 @@ class ICOBenchSpider(Spider):
             elif key.lower() == "product":
                 rating["prodScore"] = value
 
-        rating['totalScore'] = rating_block.xpath(".//div[@itemprop='ratingValue']/div[contains(@class, rate)]/text()").extract()[0]
+        rating['totalScore'] = \
+            rating_block.xpath(".//div[@itemprop='ratingValue']/div[contains(@class, rate)]/text()").extract()[0]
         item["rating"] = rating
         # print rating
 
@@ -140,7 +142,7 @@ class ICOBenchSpider(Spider):
         values = [i.strip() for i in values]
 
         for key, value in dict(zip(keys, values)).items():
-            item["ticker"] = item['name']   # 设置ticker是为了兼容icodrops
+            item["ticker"] = item['name']  # 设置ticker是为了兼容icodrops
             if key.lower() == "token":
                 financial["token"] = value
                 item["ticker"] = value
@@ -242,6 +244,15 @@ class ICOBenchSpider(Spider):
         team["teamSize"] = len(team["members"])
         item["team"] = team
 
+    def parse_about(self, response, item):
+        abouts = response.xpath(".//div[@id='about']/p/text()")
+        if len(abouts) < 2:
+            abouts = response.xpath(".//div[@id='about']//li/text()")
+        about = ""
+        for p in abouts:
+            about = about + p.extract() + "\n"
+        item["about"] = about
+
     def parse_milestones(self, response, item):
         steps = response.xpath(".//div[@id='milestones']/div/div[contains(@class, 'row')]")
         for step in steps:
@@ -251,22 +262,3 @@ class ICOBenchSpider(Spider):
             what = step.xpath("./div[@class='bubble']/p/text()").extract()
             ms["what"] = [w.strip() for w in what]
             item["mileStones"].append(ms)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
