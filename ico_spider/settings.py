@@ -5,7 +5,7 @@ import config
 home = expanduser("~")
 
 BOT_NAME = 'ico_spider'
-DOWNLOAD_DELAY = 0.25
+DOWNLOAD_DELAY = 1
 COOKIES_ENABLED = True
 COOKIES_DEBUG = True
 SPIDER_MODULES = ['ico_spider.spiders']

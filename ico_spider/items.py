@@ -16,6 +16,7 @@ class ICO(scrapy.Item):
     name = Field()  # name of project
     categories = Field()  # categories of this ico
     description = Field()  # basic description
+    about = Field() # detailed description
     message = Field()  # extra message related to the ico like alert
     country = Field()
     avatar = Field()
