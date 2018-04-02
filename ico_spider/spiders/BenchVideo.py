@@ -38,6 +38,7 @@ class VideoSpider(Spider):
         yield Request(self.base_url.format(self.current_page), self.parse)
 
     def parse_video(self, response):
+        self.log('进入详情页 = {}'.format(response.url))
         ico_information = response.xpath(".//div[@class='ico_information']")
         name = ico_information.xpath(".//div[contains(@class, 'name')]/h1/text()").extract()[0].split('(')[0]
 
@@ -45,14 +46,16 @@ class VideoSpider(Spider):
         pattern = "'[a-zA-Z0-9/\.:\s\?\-=_&]*?'"
         video_url = re.search(pattern, onclick_str).group().replace("'", "")
         if not video_url.startswith('http'):
+            self.log('视频播放页地址匹配错误！')
             self.log('onclick_str = {}'.format(onclick_str))
             self.log('video_url = {}'.format(video_url))
 
         if not self.isdownloaded(name):
+            self.log('请求视频播放页 = {}'.format(video_url))
             yield Request(video_url, self.parse_video_play_page, name)
 
     def parse_video_play_page(self, response):
-        self.log('video play url: A response from %s just arrived!' % response.url)
+        self.log('视频播放页: A response from %s just arrived!' % response.url)
         name = response.meta.get('name')
         video_url = response.xpath("//link[contains(@href, 'youtube.com/watch')]/@href").extract()[0]
         self.download_video(video_url, name)
@@ -61,7 +64,7 @@ class VideoSpider(Spider):
         return os.path.isfile(os.path.join(self.save_path, name + '.mp4'))
 
     def download_video(self, url, name):
-        self.log('download video_url: {}'.format(url))
+        self.log('正在下载视频: {}'.format(url))
         yt = YouTube(url)
         yt.streams.filter(subtype='mp4').first().download(self.save_path, filename=name)
 
