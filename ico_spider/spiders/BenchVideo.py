@@ -42,16 +42,20 @@ class VideoSpider(Spider):
         name = ico_information.xpath(".//div[contains(@class, 'name')]/h1/text()").extract()[0].split('(')[0]
 
         onclick_str = ico_information.xpath(".//div[@class='video']/@onclick").extract()[0]
-        # self.log('onclick_str = {}'.format(onclick_str))
         pattern = "'[a-zA-Z0-9/\.:\s\?\-=_&]*?'"
         video_url = re.search(pattern, onclick_str).group().replace("'", "")
-        self.log('video_url = {}'.format(video_url))
         if not video_url.startswith('http'):
-            print onclick_str
-            print video_url
+            self.log('onclick_str = {}'.format(onclick_str))
+            self.log('video_url = {}'.format(video_url))
 
         if not self.isdownloaded(name):
-            self.download_video(video_url, name)
+            yield Request(video_url, self.parse_video_play_page, name)
+
+    def parse_video_play_page(self, response):
+        self.log('video play url: A response from %s just arrived!' % response.url)
+        name = response.meta.get('name')
+        video_url = response.xpath("//link[contains(@href, 'youtube.com/watch')]/@href").extract()[0]
+        self.download_video(video_url, name)
 
     def isdownloaded(self, name):
         return os.path.isfile(os.path.join(self.save_path, name + '.mp4'))
