@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import os.path
 from pytube import YouTube
 from scrapy.conf import settings
 from scrapy.spider import Spider, Request
@@ -10,6 +11,7 @@ class VideoSpider(Spider):
     name = "bench_video"
     allowed_domains = ["icodrops.com", "icobench.com", "youtube.com"]
     domains = "https://icobench.com"
+    save_path = settings["VIDEO_STORE"]
     start_urls = []
 
     def __init__(self, start=1, end=213, *args, **kwargs):
@@ -40,19 +42,26 @@ class VideoSpider(Spider):
         name = ico_information.xpath(".//div[contains(@class, 'name')]/h1/text()").extract()[0].split('(')[0]
 
         onclick_str = ico_information.xpath(".//div[@class='video']/@onclick").extract()[0]
-        self.log('onclick_str = {}'.format(onclick_str))
-        pattern = r"'[a-zA-Z0-9:/.=?]*?'"
+        # self.log('onclick_str = {}'.format(onclick_str))
+        pattern = "'[a-zA-Z0-9/\.:\s\?\-=_&]*?'"
         video_url = re.search(pattern, onclick_str).group().replace("'", "")
         self.log('video_url = {}'.format(video_url))
-        print onclick_str
-        print video_url
+        if not video_url.startswith('http'):
+            print onclick_str
+            print video_url
 
-        self.download_video(video_url, name)
+        if not self.isdownloaded(name):
+            self.download_video(video_url, name)
+
+    def isdownloaded(self, name):
+        return os.path.isfile(os.path.join(self.save_path, name + '.mp4'))
 
     def download_video(self, url, name):
         self.log('download video_url: {}'.format(url))
-        save_path = settings["VIDEO_STORE"]
         yt = YouTube(url)
-        yt.streams.filter(subtype='mp4').first().download(save_path, filename=name)
+        yt.streams.filter(subtype='mp4').first().download(self.save_path, filename=name)
+
+
+
 
 
