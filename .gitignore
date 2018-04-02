@@ -64,3 +64,4 @@ video/
 
 #local config file
 config.py
+debug.py

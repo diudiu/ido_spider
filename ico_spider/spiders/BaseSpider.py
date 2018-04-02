@@ -10,6 +10,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import WebDriverException
 
 
 class BaseSpider(Spider):
@@ -46,7 +47,10 @@ class BaseSpider(Spider):
         chrome_options = Options()
         # chrome_options.add_argument('--dns-prefetch-disable')
         chrome_options.add_argument('headless')
-        driver = Chrome(chrome_options=chrome_options)
+        try:
+            driver = Chrome(chrome_options=chrome_options)
+        except WebDriverException:
+            driver = Chrome('/usr/local/bin/chromedriver', chrome_options=chrome_options)
         wait = WebDriverWait(driver, 10)
 
         # driver = webdriver.Firefox(executable_path='/usr/local/bin/geckodriver')
