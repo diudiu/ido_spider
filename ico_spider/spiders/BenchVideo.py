@@ -2,6 +2,7 @@
 
 import re
 import os.path
+import youtube_dl
 from pytube import YouTube
 from scrapy.conf import settings
 from scrapy.spider import Spider, Request
@@ -40,7 +41,7 @@ class VideoSpider(Spider):
     def parse_video(self, response):
         self.log('进入详情页 = {}'.format(response.url))
         ico_information = response.xpath(".//div[@class='ico_information']")
-        name = ico_information.xpath(".//div[contains(@class, 'name')]/h1/text()").extract()[0].split('(')[0]
+        name = ico_information.xpath(".//div[contains(@class, 'name')]/h1/text()").extract()[0].split('(')[0].replace(" ", "").strip()
 
         onclick_str = ico_information.xpath(".//div[@class='video']/@onclick").extract()[0]
         pattern = "'[a-zA-Z0-9/\.:\s\?\-=_&]*?'"
@@ -52,21 +53,22 @@ class VideoSpider(Spider):
 
         if not self.isdownloaded(name):
             self.log('请求视频播放页: name={}, url = {}'.format(name, video_url))
-            yield Request(video_url, self.parse_video_play_page, name)
-
-    def parse_video_play_page(self, response):
-        name = response.meta.get('name')
-        self.log('进入视频播放页: name = {}, url = {}'.format(name, response.url))
-        video_url = response.xpath("//link[contains(@href, 'youtube.com/watch')]/@href").extract()[0]
-        self.download_video(video_url, name)
+            self.download_video(video_url, name)
 
     def isdownloaded(self, name):
         return os.path.isfile(os.path.join(self.save_path, name + '.mp4'))
 
     def download_video(self, url, name):
         self.log('正在下载视频: name = {}, url = {}'.format(name, url))
-        yt = YouTube(url)
-        yt.streams.filter(subtype='mp4').first().download(self.save_path, filename=name)
+        ydl_opts = {
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4',
+            'outtmpl': os.path.join(self.save_path, name + '.%(ext)s'),
+            'noplaylist': True,
+        }
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+
+
 
 
 
