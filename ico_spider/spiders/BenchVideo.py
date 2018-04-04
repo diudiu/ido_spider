@@ -51,12 +51,12 @@ class VideoSpider(Spider):
             self.log('video_url = {}'.format(video_url))
 
         if not self.isdownloaded(name):
-            self.log('请求视频播放页 = {}'.format(video_url))
+            self.log('请求视频播放页: name={}, url = {}'.format(name, video_url))
             yield Request(video_url, self.parse_video_play_page, name)
 
     def parse_video_play_page(self, response):
-        self.log('视频播放页: A response from %s just arrived!' % response.url)
         name = response.meta.get('name')
+        self.log('进入视频播放页: name = {}, url = {}'.format(name, response.url))
         video_url = response.xpath("//link[contains(@href, 'youtube.com/watch')]/@href").extract()[0]
         self.download_video(video_url, name)
 
@@ -64,7 +64,7 @@ class VideoSpider(Spider):
         return os.path.isfile(os.path.join(self.save_path, name + '.mp4'))
 
     def download_video(self, url, name):
-        self.log('正在下载视频: {}'.format(url))
+        self.log('正在下载视频: name = {}, url = {}'.format(name, url))
         yt = YouTube(url)
         yt.streams.filter(subtype='mp4').first().download(self.save_path, filename=name)
 
